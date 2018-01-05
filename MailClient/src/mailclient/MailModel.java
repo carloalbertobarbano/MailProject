@@ -13,32 +13,7 @@ import java.util.Comparator;
  *
  * @author carloalberto
  */
-interface IMailModel {
-    public int getId();
-    public String getSender();
-    public String getSubject();
-    public String getBody();
-    public String getDate();
-    public ArrayList<String> getDest();
-    
-    public static final String SORT_DATE = "Date";
-    public static Comparator<MailModel> SortDate = new Comparator<MailModel>() {
-        @Override
-        public int compare(MailModel a, MailModel b) {
-            return b.getDate().compareTo(a.getDate());
-        }
-    };
-    
-    public static final String SORT_SENDER = "Sender";
-    public static Comparator<MailModel> SortSender = new Comparator<MailModel>() {
-        @Override
-        public int compare(MailModel a, MailModel b) {
-            return a.getSender().compareTo(b.getSender());
-        }
-    };
-}
-
-public class MailModel implements IMailModel, Serializable  {
+public class MailModel implements Serializable  {
     private static int num = 0;
     
     private int id;
@@ -63,4 +38,21 @@ public class MailModel implements IMailModel, Serializable  {
     public String getBody() { return body; }
     public String getDate() { return date; }
     public ArrayList<String> getDest() { return dest; }
+    
+    
+    public static final String SORT_DATE = "Date";
+    public static Comparator<MailModel> SortDate = new Comparator<MailModel>() {
+        @Override
+        public int compare(MailModel a, MailModel b) {
+            return b.getDate().compareTo(a.getDate());
+        }
+    };
+    
+    public static final String SORT_SENDER = "Sender";
+    public static Comparator<MailModel> SortSender = new Comparator<MailModel>() {
+        @Override
+        public int compare(MailModel a, MailModel b) {
+            return a.getSender().compareTo(b.getSender());
+        }
+    };
 }

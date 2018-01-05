@@ -12,16 +12,6 @@ import java.rmi.*;
  *
  * @author carloalberto
  */
-interface IRemoteMailboxDataModel extends Remote {
-    void setAccount(String account) throws RemoteException;
-    String getAccount() throws RemoteException;
-    ObservableList<MailModel> getMailbox(int mailbox) throws RemoteException;
-    boolean deleteMail(int mailbox, MailModel mail) throws RemoteException;
-    boolean sortMailbox(int mailbox, Comparator<? super MailModel> comparator) throws RemoteException;
-    boolean insertMail(int mailbox, MailModel mail) throws RemoteException;
-}
-
-
 public class RemoteMailboxDataModel implements IMailboxDataModel {
     
     private IRemoteMailboxDataModel remoteMailboxDataModel;
@@ -33,7 +23,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
 
             if (System.getSecurityManager() == null)
                 System.setSecurityManager(new SecurityManager());
-            remoteMailboxDataModel = (IRemoteMailboxDataModel)Naming.lookup("rmi://localhost:2000/mailserver");
+            remoteMailboxDataModel = (IRemoteMailboxDataModel)Naming.lookup("rmi://127.0.0.1:2000/mailserver");
         
         } catch (Exception e) {
             e.printStackTrace();

@@ -50,7 +50,6 @@ public class MailServer extends Application {
     public static void main(String[] args) {
         System.out.println("Setting up security policies");
         System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailProject/MailServer/src/mailserver/server.policy");
-        //System.out.println(MailServer.class.getResource("server.policy"));
         
         if (System.getSecurityManager() == null)
             System.setSecurityManager(new SecurityManager());
@@ -68,7 +67,7 @@ public class MailServer extends Application {
         
         try {
             RemoteMailboxDataModel remoteMailboxDataModel = new RemoteMailboxDataModel();
-            Naming.rebind("rmi://localhost:2000/mailserver", remoteMailboxDataModel);
+            Naming.rebind("rmi://127.0.0.1:2000/mailserver", remoteMailboxDataModel);
             System.out.println("Server bound: " + remoteMailboxDataModel);
         
         } catch (Exception e) {
