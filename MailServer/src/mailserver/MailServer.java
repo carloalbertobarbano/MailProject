@@ -49,7 +49,7 @@ public class MailServer extends Application {
      */
     public static void main(String[] args) {
         System.out.println("Setting up security policies");
-        System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailClient/src/mailclient/client.policy");
+        System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailProject/MailServer/src/mailserver/server.policy");
         //System.out.println(MailServer.class.getResource("server.policy"));
         
         if (System.getSecurityManager() == null)

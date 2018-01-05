@@ -28,7 +28,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
     
     public RemoteMailboxDataModel() {
         try {
-            System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailClient/src/mailclient/client.policy");
+            System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailProject/MailClient/src/mailclient/client.policy");
             //System.out.println(MailServer.class.getResource("server.policy"));
 
             if (System.getSecurityManager() == null)
