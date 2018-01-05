@@ -14,7 +14,7 @@ import java.rmi.*;
  */
 public class RemoteMailboxDataModel implements IMailboxDataModel {
     
-    private IRemoteMailboxDataModel remoteMailboxDataModel;
+    private mailserver.IRemoteMailboxDataModel remoteMailboxDataModel;
     
     public RemoteMailboxDataModel() {
         try {
@@ -23,7 +23,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
 
             if (System.getSecurityManager() == null)
                 System.setSecurityManager(new SecurityManager());
-            remoteMailboxDataModel = (IRemoteMailboxDataModel)Naming.lookup("rmi://127.0.0.1:2000/mailserver");
+            remoteMailboxDataModel = (mailserver.IRemoteMailboxDataModel)Naming.lookup("rmi://127.0.0.1:2000/mailserver");
         
         } catch (Exception e) {
             e.printStackTrace();

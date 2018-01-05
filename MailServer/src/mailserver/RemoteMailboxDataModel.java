@@ -21,26 +21,32 @@ public class RemoteMailboxDataModel extends UnicastRemoteObject implements IRemo
         super();
     }
     
+    @Override
     public void setAccount(String account) throws RemoteException {
         
     }
     
+    @Override
     public String getAccount() throws RemoteException {
         return "remoteaccount";
     }
     
+    @Override
     public ObservableList<MailModel> getMailbox(int mailbox) throws RemoteException {
         return null;
     }
     
+    @Override
     public boolean deleteMail(int mailbox, MailModel mail) throws RemoteException {
         return true;
     }
     
+    @Override
     public boolean sortMailbox(int mailbox, Comparator<? super MailModel> comparator) throws RemoteException {
         return true;
     }
     
+    @Override
     public boolean insertMail(int mailbox, MailModel mail) throws RemoteException {
         return true;
     }
