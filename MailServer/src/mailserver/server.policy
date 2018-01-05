@@ -1,0 +1,5 @@
+grant {
+ASDHFGWEUFWUSDIUFHISUADHFIUDSAHFIDUSAH
+  permission java.security.AllPermission;
+  permission java.net.AllPermission;
+};
