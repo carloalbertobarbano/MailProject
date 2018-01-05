@@ -26,8 +26,6 @@ public interface IMailboxDataModel {
         public static final int mailboxes_num = 5;
     }
     
-    //public static IMailboxDataModel get();
-    
     public void setAccount(String account);
     
     public String getAccount();

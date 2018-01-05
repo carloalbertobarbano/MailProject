@@ -17,7 +17,6 @@ public final class MailboxDataModelFactory {
        if (instance == null)
           instance = new RemoteMailboxDataModel();
        
-       System.out.println("REMOTE ACCOUNT: " + instance.getAccount());
        return instance;
    }
 }
