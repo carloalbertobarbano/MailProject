@@ -23,6 +23,15 @@ public class MailModel implements Serializable  {
     private String body;
     private String date;
     
+    @Override
+    public boolean equals(Object o) {
+        if (o != null && o instanceof MailModel) {
+            return ((MailModel)o).getId() == this.getId();
+        }
+        
+        return false;
+    }
+    
     public MailModel(String sender, ArrayList<String> dest, String subject, String body, String date) {
         this.id = num++;
         this.sender = sender;

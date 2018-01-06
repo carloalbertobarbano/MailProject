@@ -97,8 +97,14 @@ public class FXMLMainActivityController implements Initializable {
              String mailbox = (String)((TreeItem)newValue).getValue();
              System.out.println("Selected: " + mailbox);
              
+             
+             if (mailbox.equals(mailboxDataModel.getAccount())) {
+                 System.out.println("Selected account, skipping");
+                 return;
+             }
+             
              try {
-                int index = MailboxDataModel.Mailboxes.labels.indexOf(mailbox);
+                int index = IMailboxDataModel.Mailboxes.labels.indexOf(mailbox);
                 list_view_messages.setItems(mailboxDataModel.getMailbox(index));
                 currentMailbox = index;
                 mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);

@@ -20,10 +20,7 @@ public class MailClient extends Application {
     
     @Override
     public void start(Stage stage) throws Exception {
-        Parent root = FXMLLoader.load(getClass().getResource("FXMLMainActivity.fxml"));
-        
-        System.out.println("MAIL URL: " + getClass().getResource("FXMLMainActivity.fxml"));
-        
+        Parent root = FXMLLoader.load(getClass().getResource("FXMLMainActivity.fxml"));        
         
         Scene scene = new Scene(root);
         
