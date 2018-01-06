@@ -38,7 +38,7 @@ public class Database {
         Transaction t = transactionManager.begin();
         try {
             
-            t.execute(TransactionAction.READ, String.format("/%s/%s", account, mailbox), null);
+            t.execute(TransactionAction.READ, String.format("/%s/%s", account, mailbox), null, null);
             result = t.commit();
         
         } catch (IOException e) {
@@ -56,11 +56,30 @@ public class Database {
         Transaction t = transactionManager.begin();
 
         try {
-            t.execute(TransactionAction.DELETE, String.format("/%s/%s", account, mailbox), mail);
+            t.execute(TransactionAction.DELETE, String.format("/%s/%s", account, mailbox), mail, null);
             t.commit();
         
         } catch (IOException e) {
             Logger.error("Could not delete mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox) + ", aborting");
+            Logger.error(e.getMessage());
+            return false;
+        }
+        
+        return true;
+    }
+    
+    public boolean insertMail(String account, String mailbox, MailModel mail) {
+        Logger.log("Inserting mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox));
+        
+        Transaction t = transactionManager.begin();
+        
+        try {
+            t.execute(TransactionAction.INSERT, String.format("/%s/%s", account, mailbox), null, mail);
+            t.commit();
+            
+        } catch (IOException e) {
+            Logger.error("Could not insert mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox) + ", aborting");
+            Logger.error(e.getMessage());
             return false;
         }
         

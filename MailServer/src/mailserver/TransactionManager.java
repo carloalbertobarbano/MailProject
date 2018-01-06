@@ -6,6 +6,8 @@
 package mailserver;
 
 import java.io.IOException;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -140,12 +142,17 @@ class TransactionManager {
             
             try {
                 JSONObject jsonDatabase = new JSONObject(database);
-                Files.write(Paths.get(DATAFILE_PATH), jsonDatabase.toString().getBytes(), StandardOpenOption.CREATE);
+                try (BufferedWriter out = new BufferedWriter(new FileWriter(DATAFILE_PATH))) {
+                    out.write(jsonDatabase.toString());
+                }
+                
                 needsFlush.set(false);
                 
             } catch (IOException e) {
-                writeLock.unlock();
                 throw e;
+                
+            } finally {
+                writeLock.unlock();
             }
         }
         
@@ -179,9 +186,14 @@ class TransactionManager {
                 
                 case TransactionAction.INSERT: 
                     writeLock.lock();
+                    if (!database.get(keyAccount).containsKey(keyMailbox)) {
+                        Logger.log(action.getPath() + " not found. Inserting it");
+                        database.get(keyAccount).put(keyMailbox, new ArrayList<mailclient.MailModel>());
+                    }
+                    
                     database.get(keyAccount)
                             .get(keyMailbox)
-                            .add(action.getData());
+                            .add(action.getNewValue());
                     
                     needsFlush.set(true);
                     writeLock.unlock();
@@ -189,7 +201,12 @@ class TransactionManager {
                 
                 case TransactionAction.UPDATE: 
                     writeLock.lock();
-                    //TODO
+                    int index = database.get(keyAccount)
+                                        .get(keyMailbox)
+                                        .indexOf(action.getOldValue());
+                    database.get(keyAccount)
+                            .get(keyMailbox)
+                            .set(index, action.getNewValue());
                     needsFlush.set(true);
                     writeLock.unlock();
                     break;
@@ -199,7 +216,7 @@ class TransactionManager {
                           
                     database.get(keyAccount)
                             .get(keyMailbox)
-                            .remove(action.getData());
+                            .remove(action.getOldValue());
                     
                     needsFlush.set(true);
                     writeLock.unlock();
@@ -214,7 +231,7 @@ class TransactionManager {
         flush();
         
         //Remove records for this transaction, since it has completed 
-        //We are not logging transactions for after crash restore, so we dont need it
+        //We are not logging transactions for after-crash restore, so we dont need it
         transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
             @Override
             public Boolean apply(TransactionAction t2) {
@@ -227,6 +244,7 @@ class TransactionManager {
     
     public Transaction begin() {
         Transaction t = new Transaction();
+        transactions.add(new TransactionAction(t, TransactionAction.BEGIN, null, null, null));
         return t;
     }
     
@@ -245,7 +263,7 @@ class TransactionManager {
             throw new RuntimeException("Transaction " + t.getUniqueId() + " has already committed.");
         }
         
-        transactions.add(new TransactionAction(t, TransactionAction.END, null, null));
+        transactions.add(new TransactionAction(t, TransactionAction.END, null, null, null));
         
         return applyTransactionActions(t);
     }

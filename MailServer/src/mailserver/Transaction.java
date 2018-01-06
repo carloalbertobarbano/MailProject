@@ -24,8 +24,8 @@ public class Transaction {
         return id;
     }
     
-    public void execute(int action, String path, mailclient.MailModel data) {
-        TransactionAction ta = new TransactionAction(this, action, path, data);
+    public void execute(int action, String path, mailclient.MailModel oldValue, mailclient.MailModel newValue) {
+        TransactionAction ta = new TransactionAction(this, action, path, oldValue, newValue);
         TransactionManager.get().execute(ta);
     }
     
