@@ -62,6 +62,7 @@ public class Database {
         } catch (IOException e) {
             Logger.error("Could not delete mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox) + ", aborting");
             Logger.error(e.getMessage());
+            t.abort();
             return false;
         }
         
@@ -80,6 +81,7 @@ public class Database {
         } catch (IOException e) {
             Logger.error("Could not insert mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox) + ", aborting");
             Logger.error(e.getMessage());
+            t.abort();
             return false;
         }
         
