@@ -5,8 +5,10 @@
  */
 package mailserver;
 
+import java.io.IOException;
 import org.json.*;
 import java.util.ArrayList;
+import java.util.List;
 import mailclient.MailModel;
 
 
@@ -30,31 +32,38 @@ public class Database {
     }
     
     public ArrayList<mailclient.MailModel> getAccountMailbox(String account, String mailbox) {
-        TransactionManager.Transaction t = transactionManager.begin();
-        transactionManager.execute(new TransactionManager.TransactionAction(
-                                        t,
-                                        TransactionManager.TransactionAction.READ, 
-                                        "/" + account + "/" + mailbox, null));
-        JSONObject json = transactionManager.commit(t);
+        Logger.log("Retrieving mailbox: " + String.format("/%s/%s", account, mailbox));
         
-        ArrayList<mailclient.MailModel> result = new ArrayList<>();
+        ArrayList<MailModel> result = null;
+        Transaction t = transactionManager.begin();
+        try {
+            
+            t.execute(TransactionAction.READ, String.format("/%s/%s", account, mailbox), null);
+            result = t.commit();
         
-        for (int i = 0; i < json.getJSONArray(mailbox).length(); i++) {
-            JSONObject mail = json.getJSONArray(mailbox).getJSONObject(i);
-            
-            String sender = mail.getString("sender");
-            ArrayList<String> dest = new ArrayList<>();
-            JSONArray jsonArrayDest = mail.getJSONArray("dest");
-            for (int j = 0; j < jsonArrayDest.length(); j++)
-                dest.add(jsonArrayDest.getString(i));
-            
-            String subject = mail.getString("subject");
-            String body = mail.getString("body");
-            String date = mail.getString("date");
-            
-            result.add(new MailModel(sender, dest, subject, body, date));
+        } catch (IOException e) {
+            Logger.error("Could not retrieve " + String.format("/%s/%s", account, mailbox) + ", aborting");
+            t.abort();
+            return null;
         }
         
         return result;
+    }
+    
+    public boolean deleteMail(String account, String mailbox, MailModel mail) {
+        Logger.log("Deleting mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox));
+        
+        Transaction t = transactionManager.begin();
+
+        try {
+            t.execute(TransactionAction.DELETE, String.format("/%s/%s", account, mailbox), mail);
+            t.commit();
+        
+        } catch (IOException e) {
+            Logger.error("Could not delete mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox) + ", aborting");
+            return false;
+        }
+        
+        return true;
     }
 }

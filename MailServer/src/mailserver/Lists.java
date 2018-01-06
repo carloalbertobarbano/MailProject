@@ -5,8 +5,8 @@
  */
 package mailserver;
 
+import java.util.List;
 import java.util.ArrayList;
-
 /**
  *
  * @author carloalberto
@@ -16,8 +16,8 @@ interface Predicate<R, T> {
 }
 
 public class Lists {
-    public static <T> ArrayList<T> filter(ArrayList<T> list, Predicate<Boolean, T> criteria) {
-         ArrayList<T> result = new ArrayList<>();
+    public static <T> List<T> filter(List<T> list, Predicate<Boolean, T> criteria) {
+         List<T> result = new ArrayList<>();
          
          for (T t : list)
              if (criteria.apply(t))
@@ -26,14 +26,14 @@ public class Lists {
          return result;
     }
     
-    public static <T> Boolean satisfies(ArrayList<T> list, Predicate<Boolean, T> criteria) {
+    public static <T> Boolean satisfies(List<T> list, Predicate<Boolean, T> criteria) {
         for (T t : list)
             if (criteria.apply(t))
                 return true;
         return false;
     }
     
-    public static <T> Boolean satisfiesAll(ArrayList<T> list, Predicate<Boolean, T> criteria) {
+    public static <T> Boolean satisfiesAll(List<T> list, Predicate<Boolean, T> criteria) {
         for (T t : list)
             if (!criteria.apply(t))
                 return false;
