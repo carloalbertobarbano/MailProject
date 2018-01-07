@@ -62,20 +62,36 @@ public class FXMLWriteActivityController implements Initializable {
         });
         
         button_send.setOnAction((event) ->  {
-            ArrayList<String> dest = new ArrayList(Arrays.asList(textfield_to.getText().split(";")));
-            String subject = textfield_subject.getText();
-            String body = textarea_body.getText();
-            String sender = new MailboxDataModelFactory().getInstance().getAccount();
-            String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date());
+            try {
+                ArrayList<String> dest = new ArrayList(Arrays.asList(textfield_to.getText().split(";")));
+                String subject = textfield_subject.getText();
+                String body = textarea_body.getText();
+                String sender = new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().getAccount();
+                String date = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date());
+
+                if (dest.size() > 0 && !dest.get(0).isEmpty() && !subject.isEmpty() && !body.isEmpty() && !sender.isEmpty()) {
+
+                    MailModel mailModel = new MailModel(sender, dest, subject, body, date);
+                    new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().sendMail(mailModel);
+
+                    ((Stage)button_discard.getScene().getWindow()).close();
+                } else {
+                    new Alert(Alert.AlertType.ERROR, "All fields required!", ButtonType.OK).show();
+                }
             
-            if (dest.size() > 0 && !dest.get(0).isEmpty() && !subject.isEmpty() && !body.isEmpty() && !sender.isEmpty()) {
-                MailModel mailModel = new MailModel(sender, dest, subject, body, date);
-                new MailboxDataModelFactory().getInstance().insertMail(MailboxDataModel.Mailboxes.MAILBOX_OUTBOX, mailModel);
-                ((Stage)button_discard.getScene().getWindow()).close();
-            } else {
-                new Alert(Alert.AlertType.ERROR, "All fields required!", ButtonType.OK).show();
+            } catch (Exception e) {
+                FXMLMainActivityController.errorDialog(e.getMessage());
             }
         });
     }    
     
+    public void initFromMail(MailModel mail) {
+        textfield_to.setText(mail.getDest().toString()
+                                        .replace("[","")
+                                        .replace("]", "")
+                                        .replace(",", ";"));
+        textfield_subject.setText(mail.getSubject());
+        textarea_body.setText(mail.getBody());
+        
+    }
 }

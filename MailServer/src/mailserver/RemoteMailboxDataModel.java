@@ -50,30 +50,23 @@ public class RemoteMailboxDataModel extends UnicastRemoteObject implements IRemo
     }
     
     @Override
-    public ArrayList<MailModel> getMailbox(int mailbox) throws RemoteException {
-         
+    public ArrayList<MailModel> getMailbox(int mailbox) throws RemoteException, AccountNotFoundException {
         return this.database.getAccountMailbox(account, Mailboxes.labels.get(mailbox));
     }
     
     @Override
-    public boolean deleteMail(int mailbox, MailModel mail) throws RemoteException {
-        try {
-            return this.database.deleteMail(account, Mailboxes.labels.get(mailbox), mail);
-            
-        } catch (Exception e) {
-            return false;
-        }
+    public boolean deleteMail(int mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
+        return this.database.deleteMail(account, Mailboxes.labels.get(mailbox), mail);
     }
     
     @Override
-    public boolean insertMail(int mailbox, MailModel mail) throws RemoteException {
-        try {
-            return this.database.insertMail(account, Mailboxes.labels.get(mailbox), mail);
-            //System.out.println("REMOTE: inserting mail with id: " + mail.getId());
-            //return this.mailbox.get(mailbox).add(mail);
-            
-        } catch (Exception e) {
-            return false;
-        }
+    public boolean insertMail(int mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
+        return this.database.insertMail(account, Mailboxes.labels.get(mailbox), mail);
+           
+    }
+    
+    @Override
+    public boolean sendMail(MailModel mail) throws RemoteException, AccountNotFoundException {
+        return this.database.sendMail(account, mail);
     }
 }

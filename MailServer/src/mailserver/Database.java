@@ -6,8 +6,12 @@
 package mailserver;
 
 import java.io.IOException;
+import java.rmi.RemoteException;
+import java.text.SimpleDateFormat;
 import org.json.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import mailclient.MailModel;
 
@@ -20,6 +24,8 @@ public class Database {
     private static Database instance = null;
     private final TransactionManager transactionManager;
     
+    public static final String SYSTEM_ACCOUNT = "noreply@mailserver";
+    
     public static Database get() {
         if (instance == null)
             instance = new Database();
@@ -31,7 +37,7 @@ public class Database {
         transactionManager = TransactionManager.get();
     }
     
-    public ArrayList<mailclient.MailModel> getAccountMailbox(String account, String mailbox) {
+    public ArrayList<mailclient.MailModel> getAccountMailbox(String account, String mailbox) throws RemoteException, AccountNotFoundException {
         Logger.log("Retrieving mailbox: " + String.format("/%s/%s", account, mailbox));
         
         ArrayList<MailModel> result = null;
@@ -44,13 +50,14 @@ public class Database {
         } catch (IOException e) {
             Logger.error("Could not retrieve " + String.format("/%s/%s", account, mailbox) + ", aborting");
             t.abort();
-            return null;
+            
+            throw new RemoteException("Could not retrieve mailbox, aborting");
         }
         
         return result;
     }
     
-    public boolean deleteMail(String account, String mailbox, MailModel mail) {
+    public boolean deleteMail(String account, String mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
         Logger.log("Deleting mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox));
         
         Transaction t = transactionManager.begin();
@@ -63,13 +70,14 @@ public class Database {
             Logger.error("Could not delete mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox) + ", aborting");
             Logger.error(e.getMessage());
             t.abort();
-            return false;
+            
+            throw new RemoteException("Could not dellete mail, aborting");
         }
         
         return true;
     }
     
-    public boolean insertMail(String account, String mailbox, MailModel mail) {
+    public boolean insertMail(String account, String mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
         Logger.log("Inserting mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox));
         
         Transaction t = transactionManager.begin();
@@ -79,12 +87,60 @@ public class Database {
             t.commit();
             
         } catch (IOException e) {
+            e.printStackTrace();
             Logger.error("Could not insert mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox) + ", aborting");
             Logger.error(e.getMessage());
             t.abort();
-            return false;
+            
+            throw new RemoteException("Could not insert mail, aborting");
         }
         
         return true;
     }
+    
+    public boolean sendMail(String account, MailModel mail) throws RemoteException, AccountNotFoundException {
+        Logger.log("Sending mail from " + account + " to " + mail.getDest());
+        
+        
+        try {
+            this.insertMail(account, "Sent", mail);
+            
+            ArrayList<String> missingAccounts = new ArrayList<>();
+            
+            for (String dest : mail.getDest()) {
+                try {
+                    this.insertMail(dest, "Inbox", mail);
+                
+                } catch (AccountNotFoundException e) {
+                    missingAccounts.add(dest);
+                }
+            }
+            
+            if (missingAccounts.size() > 0) {
+                ArrayList<String> dest = new ArrayList<>();
+                dest.add(account);
+                
+                
+                MailModel deliveryStatusMail = new MailModel(SYSTEM_ACCOUNT, dest,
+                                                             "Delivery Status notification: failure", 
+                                                             "Your email could not be delivered to the following containers: " + missingAccounts +
+                                                             "\n\n\n" + "----Original email body------\n" + 
+                                                             mail.toString(),
+                                                             new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
+                this.insertMail(account, "Inbox", deliveryStatusMail);
+            }
+            
+            
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            Logger.error("Could not send mail from " + account + " to " + mail.getDest());
+            Logger.error(e.getMessage());
+            
+            throw new RemoteException("Could not send mail!");
+        }
+        
+        return true;
+    }
+   
 }

@@ -8,8 +8,7 @@ package mailserver;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.ArrayList;
-import java.util.Comparator;
-import javafx.collections.ObservableList;
+import mailclient.MailModel;
 
 /**
  *
@@ -18,7 +17,8 @@ import javafx.collections.ObservableList;
 public interface IRemoteMailboxDataModel extends Remote {
     void setAccount(String account) throws RemoteException;
     String getAccount() throws RemoteException;
-    ArrayList<mailclient.MailModel> getMailbox(int mailbox) throws RemoteException;
-    boolean deleteMail(int mailbox, mailclient.MailModel mail) throws RemoteException;
-    boolean insertMail(int mailbox, mailclient.MailModel mail) throws RemoteException;
+    ArrayList<MailModel> getMailbox(int mailbox) throws RemoteException, AccountNotFoundException;
+    boolean deleteMail(int mailbox, MailModel mail) throws RemoteException, AccountNotFoundException;
+    boolean insertMail(int mailbox, MailModel mail) throws RemoteException, AccountNotFoundException;
+    boolean sendMail(MailModel mail) throws RemoteException, AccountNotFoundException;
 }

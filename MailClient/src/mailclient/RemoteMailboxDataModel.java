@@ -5,11 +5,13 @@
  */
 package mailclient;
 
+import java.net.MalformedURLException;
 import java.util.Comparator;
 import javafx.collections.ObservableList;
 import java.rmi.*;
 import java.util.ArrayList;
 import javafx.collections.FXCollections;
+import mailserver.AccountNotFoundException;
 /**
  *
  * @author carloalberto
@@ -19,17 +21,14 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
     
     private mailserver.IRemoteMailboxDataModel remoteMailboxDataModel;
     
-    public RemoteMailboxDataModel() {
-        try {
-            System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailProject/MailClient/src/mailclient/client.policy");
-
-            if (System.getSecurityManager() == null)
-                System.setSecurityManager(new SecurityManager());
-            remoteMailboxDataModel = (mailserver.IRemoteMailboxDataModel)Naming.lookup("rmi://127.0.0.1:2000/mailserver");
+    public RemoteMailboxDataModel() throws NotBoundException, MalformedURLException, RemoteException {
         
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        System.setProperty("java.security.policy", "file:/home/carloalberto/Documents/Università/prog3/MailProject/MailClient/src/mailclient/client.policy");
+
+        if (System.getSecurityManager() == null)
+            System.setSecurityManager(new SecurityManager());
+        remoteMailboxDataModel = (mailserver.IRemoteMailboxDataModel)Naming.lookup("rmi://127.0.0.1:2000/mailserver");
+        
         
         mailbox = new ArrayList<>();
         for (int i = 0; i < Mailboxes.mailboxes_num; i++)
@@ -37,77 +36,41 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
     }
     
    
-    
-    public void setAccount(String account) {
-        try {
-            remoteMailboxDataModel.setAccount(account);
-        
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void setAccount(String account) throws RemoteException {
+        remoteMailboxDataModel.setAccount(account);
     }
     
-    public String getAccount() {
-        try {
-            return remoteMailboxDataModel.getAccount();
-        
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return null;
+    public String getAccount() throws RemoteException {        
+        return remoteMailboxDataModel.getAccount();
     }
     
-    public ObservableList<mailclient.MailModel> getMailbox(int mailbox) {
-        try {
-            this.mailbox.get(mailbox).clear();
-            ArrayList<mailclient.MailModel> remoteMailbox = remoteMailboxDataModel
-                                                          .getMailbox(mailbox);
-            this.mailbox.get(mailbox).addAll(remoteMailbox);
-            return this.mailbox.get(mailbox);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return null;
+    public ObservableList<mailclient.MailModel> getMailbox(int mailbox) throws RemoteException, AccountNotFoundException {
+        this.mailbox.get(mailbox).clear();
+        ArrayList<mailclient.MailModel> remoteMailbox = remoteMailboxDataModel
+                                                      .getMailbox(mailbox);
+        this.mailbox.get(mailbox).addAll(remoteMailbox);
+        return this.mailbox.get(mailbox);
+
     }
     
-    public boolean deleteMail(int mailbox, MailModel mail) {
-        try {
-            if(remoteMailboxDataModel.deleteMail(mailbox, mail)) {
-                this.mailbox.get(mailbox).remove(mail);
-            }
-            
-            return false;
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-    
-    public boolean sortMailbox(int mailbox, Comparator<? super MailModel> comparator) {
-        try {
-            this.mailbox.get(mailbox).sort(comparator);
-            return true;
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
+    public boolean deleteMail(int mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
+        if(remoteMailboxDataModel.deleteMail(mailbox, mail))
+            if(this.mailbox.get(mailbox).remove(mail))
+                return true;
+
         return false;
     }
     
-    public boolean insertMail(int mailbox, MailModel mail) {
-        try {
-            return remoteMailboxDataModel.insertMail(mailbox, mail);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
-        return false;
+    public void sortMailbox(int mailbox, Comparator<? super MailModel> comparator) {
+        this.mailbox.get(mailbox).sort(comparator);   
+    }
+    
+    public boolean insertMail(int mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
+        return remoteMailboxDataModel.insertMail(mailbox, mail);
+    }
+    
+    public boolean sendMail(MailModel mail) throws RemoteException, AccountNotFoundException {
+        return remoteMailboxDataModel.sendMail(mail);
     }
     
 }

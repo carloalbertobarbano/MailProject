@@ -37,12 +37,14 @@ public class FXMLMailListViewItemController implements Initializable {
     }
 
     public void setModel(MailModel model) {
-       
-        if (model.getSender() == new MailboxDataModelFactory().getInstance().getAccount())
-            this.sender.setText(model.getDest().toString());
-        else
+        try {
+            if (model.getSender().equals(new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().getAccount()))
+                this.sender.setText(model.getDest().toString());
+            else
+                this.sender.setText(model.getSender());
+        } catch (Exception e) {
             this.sender.setText(model.getSender());
-        
+        }
         this.subject.setText(model.getSubject());
         this.body.setText(model.getBody());
         this.date.setText(model.getDate());

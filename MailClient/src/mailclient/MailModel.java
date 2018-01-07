@@ -24,6 +24,17 @@ public class MailModel implements Serializable  {
     private String date;
     
     @Override
+    public String toString() {
+        return "From: " + sender + " \n" + 
+               "To: " + dest.toString() + "\n" +
+               "Subject: " + subject + "\n" + 
+               "Date: " + date + "\n" +
+               "-------------------------\n" + 
+                body;
+                
+    }
+    
+    @Override
     public boolean equals(Object o) {
         if (o != null && o instanceof MailModel) {
             return ((MailModel)o).getId() == this.getId();

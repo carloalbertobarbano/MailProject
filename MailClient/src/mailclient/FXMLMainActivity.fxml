@@ -71,7 +71,7 @@
                         </AnchorPane>
                       <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="536.0" prefWidth="395.0" SplitPane.resizableWithParent="false">
                            <children>
-                              <WebView fx:id="webview_mail" layoutX="29.0" layoutY="71.0" prefHeight="465.0" prefWidth="311.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="75.0" />
+                              <WebView fx:id="webview_mail" layoutX="29.0" layoutY="114.0" prefHeight="422.0" prefWidth="311.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="100.0" />
                               <Button fx:id="button_close_webview" layoutX="6.0" layoutY="2.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" style="-fx-background-color: rgba(0,0,0,0);" text="X" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
                               <Text fx:id="text_sender" layoutX="14.0" layoutY="17.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Sender" AnchorPane.leftAnchor="15.0" AnchorPane.topAnchor="5.0">
                                  <font>
@@ -89,6 +89,8 @@
                               <Text fx:id="text_date" layoutX="270.0" layoutY="42.0" strokeType="OUTSIDE" strokeWidth="0.0" text="date" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="30.0" />
                               <Text fill="#3a90e1" layoutX="252.0" layoutY="62.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Details" underline="true" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="50.0" />
                               <Button fx:id="button_delete" layoutY="510.0" mnemonicParsing="false" prefHeight="27.0" prefWidth="73.0" style="-fx-background-color: #dedede;" text="Delete" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" />
+                              <Button fx:id="button_reply" layoutX="5.0" layoutY="78.0" maxHeight="25.0" maxWidth="80.0" minHeight="25.0" minWidth="80.0" mnemonicParsing="false" style="-fx-background-color: #dedede;" text="Reply" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="75.0" />
+                              <Button fx:id="button_forward" layoutX="68.0" layoutY="78.0" maxHeight="25.0" maxWidth="80.0" minHeight="25.0" minWidth="80.0" mnemonicParsing="false" style="-fx-background-color: #dedede;" text="Forward" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="75.0" />
                            </children></AnchorPane>
                     </items>
                   </SplitPane>

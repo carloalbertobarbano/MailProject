@@ -66,4 +66,6 @@ public class MailboxDataModel extends Observable implements IMailboxDataModel {
         this.mailbox.get(mailbox).add(mail);
         return true;
     }
+    
+    public boolean sendMail(MailModel mail) { return true; }
 }

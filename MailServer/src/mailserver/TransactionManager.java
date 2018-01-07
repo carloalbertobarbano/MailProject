@@ -29,7 +29,7 @@ import org.json.JSONObject;
  *
  * @author carloalberto
  */
-class TransactionManager {
+public class TransactionManager {
     private final ReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = reentrantReadWriteLock.readLock();
     private final Lock writeLock = reentrantReadWriteLock.writeLock();
@@ -53,7 +53,6 @@ class TransactionManager {
     
     */
     private HashMap<String, HashMap<String, ArrayList<mailclient.MailModel>>> database;
-    //private JSONObject database;
     
     
     /*
@@ -159,7 +158,7 @@ class TransactionManager {
         return true;
     }
     
-    public ArrayList<MailModel> applyTransactionActions(Transaction t) throws IOException {
+    public ArrayList<MailModel> applyTransactionActions(Transaction t) throws IOException, AccountNotFoundException {
         
         //Retrieve all actions for transaction t
         List<TransactionAction> actions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
@@ -173,9 +172,24 @@ class TransactionManager {
         
         ArrayList<MailModel> result = null;
         
+        
         for (TransactionAction action : actions) {
-            String keyAccount = action.getPath().split("/")[1];
-            String keyMailbox = action.getPath().split("/")[2];
+            String keyAccount = null;
+            String keyMailbox = null; 
+            try {
+                keyAccount = action.getPath().split("/")[1];
+                keyMailbox = action.getPath().split("/")[2];
+            
+            } catch (Exception e) {
+                Logger.error("Malformed path : " + action.getPath());
+                throw new IllegalArgumentException("Malformed path: " + action.getPath());
+            }
+            
+            if (!database.containsKey(keyAccount)) {
+                Logger.warning("Account " + keyAccount + " not found");
+                throw new AccountNotFoundException("Account " + keyAccount + " not found");
+            }
+                
             
             switch (action.getAction()) {
                 case TransactionAction.READ:
@@ -252,7 +266,7 @@ class TransactionManager {
         transactions.add(t);
     }
     
-    public ArrayList<MailModel> commit(Transaction t) throws IOException {
+    public ArrayList<MailModel> commit(Transaction t) throws IOException, AccountNotFoundException {
         if (Lists.satisfies(transactions, new Predicate<Boolean, TransactionAction>() {
                                                 @Override
                                                 public Boolean apply(TransactionAction ta) {

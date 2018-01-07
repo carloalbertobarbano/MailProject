@@ -5,18 +5,31 @@
  */
 package mailclient;
 
+import java.net.MalformedURLException;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+
 /**
  *
  * @author carloalberto
  */
 public final class MailboxDataModelFactory {
    
-   private static IMailboxDataModel instance = null;
+   private static IMailboxDataModel remoteInstance = null;
+   private static IMailboxDataModel localInstance = null;
    
-   public IMailboxDataModel getInstance() {
-       if (instance == null)
-          instance = new RemoteMailboxDataModel();
+   public <T extends IMailboxDataModel> T getRemoteInstance() throws NotBoundException, MalformedURLException, RemoteException{
+       if (remoteInstance == null)
+          remoteInstance = new RemoteMailboxDataModel();
        
-       return instance;
+       return (T)remoteInstance;
+   }
+   
+   public IMailboxDataModel getLocalInstance() {
+       if (localInstance == null)
+          localInstance = new MailboxDataModel();
+       
+       return localInstance;
+       
    }
 }

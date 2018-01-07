@@ -25,18 +25,4 @@ public interface IMailboxDataModel {
         public static final List<String> labels = Arrays.asList("Inbox", "Sent", "Outbox", "Spam", "Trash");
         public static final int mailboxes_num = 5;
     }
-    
-    public void setAccount(String account);
-    
-    public String getAccount();
-    
-    public ObservableList<MailModel> getMailbox(int mailbox);
-    
-    public boolean deleteMail(int mailbox, MailModel mail);
-    
-    public boolean sortMailbox(int mailbox, Comparator<? super MailModel> comparator);
-    
-    public boolean insertMail(int mailbox, MailModel mail);
-            
-    
 }

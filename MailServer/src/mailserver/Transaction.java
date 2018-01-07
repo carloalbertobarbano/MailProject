@@ -29,7 +29,7 @@ public class Transaction {
         TransactionManager.get().execute(ta);
     }
     
-    public ArrayList<mailclient.MailModel> commit() throws IOException {
+    public ArrayList<mailclient.MailModel> commit() throws IOException, AccountNotFoundException {
         return TransactionManager.get().commit(this);
     }
     
