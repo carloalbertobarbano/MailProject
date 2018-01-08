@@ -335,12 +335,12 @@ public class TransactionManager {
         
         //Remove records for this transaction, since it has completed 
         //We are not logging transactions for after-crash restore, so we dont need it
-        /*transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+        transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
             @Override
             public Boolean apply(TransactionAction t2) {
                 return t2.getTransaction().getUniqueId() != t.getUniqueId();
             }
-        });*/
+        });
         
         return result;
     }
