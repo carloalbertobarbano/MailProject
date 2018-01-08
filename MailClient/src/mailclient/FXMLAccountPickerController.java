@@ -7,6 +7,7 @@ package mailclient;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -16,6 +17,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.stage.Stage;
+import static mailclient.FXMLMainActivityController.errorDialog;
 
 /**
  * FXML Controller class
@@ -53,6 +55,18 @@ public class FXMLAccountPickerController implements Initializable {
                 stage.setScene(new Scene(root));
                 FXMLMainActivityController mainActivityController = loader.<FXMLMainActivityController>getController();
                 mainActivityController.connectAccount(account);
+                
+                stage.setOnCloseRequest(closeEvent -> {
+                    try {
+                        new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().close();
+
+                    } catch (Exception e) {
+                        errorDialog(e.getMessage());
+                    }
+
+                    Platform.exit();
+                });
+                   
                 stage.show();
                 
                 ((Stage)button_ok.getScene().getWindow()).close();

@@ -65,7 +65,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     continue;
                 
                 try {
-                    ArrayList<MailModel> remoteMailbox = remoteMailboxDataModel.getMailbox(i);
+                    ArrayList<MailModel> remoteMailbox = remoteMailboxDataModel.getMailbox(account, i);
                     
                     if (remoteMailbox == null)
                         continue;
@@ -96,7 +96,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
 
                         Platform.runLater(() -> {
                             try {
-                                remoteMailboxDataModel.deleteMail(current_mailbox, m);
+                                remoteMailboxDataModel.deleteMail(account, current_mailbox, m);
                                 mailbox.get(Mailboxes.MAILBOX_TRASH).remove(m);
                                 
                                  if (useCache)
@@ -157,7 +157,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     
                     if (localEmails.size() > 0 && remoteMailboxDataModel != null) {
                         for (MailModel m : localEmails) 
-                            remoteMailboxDataModel.insertMail(current_mailbox, m);
+                            remoteMailboxDataModel.insertMail(account, current_mailbox, m);
                     }
                    
                 } catch (RemoteException|AccountNotFoundException e) {
@@ -176,7 +176,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     
                     Platform.runLater(() -> {
                         try {
-                            remoteMailboxDataModel.sendMail(m);
+                            remoteMailboxDataModel.sendMail(account, m);
                             deleteMail(Mailboxes.MAILBOX_OUTBOX, m);
                             mailbox.get(Mailboxes.MAILBOX_SENT).add(m);
 
@@ -332,8 +332,6 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                    outboxHasPending.set(true);
             }
         }
-        if (remoteMailboxDataModel != null)
-            remoteMailboxDataModel.setAccount(account);
         
         if (!threadStarted) {
             threadStarted = true;
@@ -366,7 +364,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
         } else {
             System.out.println("B");
             
-            if(remoteMailboxDataModel != null && remoteMailboxDataModel.deleteMail(mailboxIndex, mail)) {
+            if(remoteMailboxDataModel != null && remoteMailboxDataModel.deleteMail(account, mailboxIndex, mail)) {
                 if(this.mailbox.get(mailboxIndex).remove(mail)) {
                     if (useCache) {
                         saveMailboxToCache(
@@ -415,7 +413,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
         }
         
         if (remoteMailboxDataModel != null)
-            return remoteMailboxDataModel.insertMail(mailboxIndex, mail);
+            return remoteMailboxDataModel.insertMail(account, mailboxIndex, mail);
         else
             return false;
     }
