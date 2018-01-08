@@ -87,18 +87,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                             return tm.equals(rm);
                         });
                     });
-                    
-                    //0e306f58-9ad2-40f0-97c3-dd139e6d7252
-                    //292173d4-95db-41c1-adc4-1ca509b7aab2
-                    
-                    //Trash
-                    //0e306f58-9ad2-40f0-97c3-dd139e6d7252
-                    //292173d4-95db-41c1-adc4-1ca509b7aab2
-                    
-                    //Server
-                    //0e306f58-9ad2-40f0-97c3-dd139e6d7252
-                    //292173d4-95db-41c1-adc4-1ca509b7aab2
-                    
+                  
                     removedMails.forEach(m -> {
                         System.out.println("Found new email to remove in " +
                                         Mailboxes.labels.get(current_mailbox) + ": " +
@@ -107,10 +96,8 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
 
                         Platform.runLater(() -> {
                             try {
-                                System.out.println("AIOOOOOOOOOOOOOOOOO");
                                 remoteMailboxDataModel.deleteMail(current_mailbox, m);
                                 mailbox.get(Mailboxes.MAILBOX_TRASH).remove(m);
-                                System.out.println("MACHECAZZ");
                                 
                                  if (useCache)
                                     saveMailboxToCache(
