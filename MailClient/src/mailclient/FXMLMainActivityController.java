@@ -5,7 +5,6 @@
  */
 package mailclient;
 
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URL;
 import java.rmi.RemoteException;
@@ -15,11 +14,6 @@ import java.util.Date;
 import java.util.ResourceBundle;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -41,6 +35,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.Region;
 import mailserver.AccountNotFoundException;
+import mailserver.Mailboxes;
 
 /**
  *
@@ -127,7 +122,7 @@ public class FXMLMainActivityController implements Initializable {
         
         TreeItem<String> accountTreeItem = new TreeItem<>(account);
         
-        MailboxDataModel.Mailboxes.labels.forEach(label -> accountTreeItem.getChildren().add(new TreeItem<>(label)));
+        Mailboxes.labels.forEach(label -> accountTreeItem.getChildren().add(new TreeItem<>(label)));
         
         tree_nav.setRoot(accountTreeItem);
         tree_nav.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> { 
@@ -141,7 +136,7 @@ public class FXMLMainActivityController implements Initializable {
              }
              
              try {
-                int index = IMailboxDataModel.Mailboxes.labels.indexOf(mailbox);
+                int index = Mailboxes.labels.indexOf(mailbox);
                 list_view_messages.setItems(mailboxDataModel.getMailbox(index));
                 currentMailbox = index;
                 mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);
@@ -155,9 +150,9 @@ public class FXMLMainActivityController implements Initializable {
              
         });
                
-        currentMailbox = MailboxDataModel.Mailboxes.MAILBOX_INBOX;
+        currentMailbox = Mailboxes.MAILBOX_INBOX;
         try {
-            list_view_messages.setItems(mailboxDataModel.getMailbox(MailboxDataModel.Mailboxes.MAILBOX_INBOX));
+            list_view_messages.setItems(mailboxDataModel.getMailbox(Mailboxes.MAILBOX_INBOX));
         
         } catch (RemoteException e) {
             //Empty mailbox

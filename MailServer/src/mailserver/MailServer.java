@@ -38,6 +38,7 @@ public class MailServer extends Application {
         
         primaryStage.setOnCloseRequest(event -> {
             Logger.log("Exitting..");
+            TransactionManager.get().close();
             System.exit(0);
         });
         

@@ -67,11 +67,91 @@ public class TransactionManager {
     */
     private List<TransactionAction> transactions = Collections.synchronizedList(new ArrayList<>());
     private AtomicBoolean needsFlush = new AtomicBoolean(false);
+    private FlusherThread flusherThread = new FlusherThread();
     
+    public class FlusherThread extends Thread {
+        private boolean running = true;
+        
+        private boolean flush(boolean force) throws IOException {
+            //Logger.log("in flush");
+            if (needsFlush.get()) {
+
+                //Flush if there is no currently active transaction modifying the database
+
+                List<TransactionAction> startedTransactions = force ? null : Lists.filter(transactions, ta -> {
+                    return ta.getAction() == TransactionAction.BEGIN;
+                });
+
+                List<TransactionAction> finishedTransactions = force ? null : Lists.filter(transactions, ta -> {
+                    return ta.getAction() == TransactionAction.END;
+                });
+
+
+                // unless forced, continue only if all transactions have ended
+                // We can just compare the sizes, as it is guaranteed that a transaction 
+                // can commit only once (see TransactionManager.commit())
+                if (!(force || startedTransactions.size() == finishedTransactions.size()))
+                    return false;
+                
+                Logger.log("Flushing database to persistent file");
+                writeLock.lock();
+
+                try {
+                    JSONObject jsonDatabase = new JSONObject(database);
+                    try (BufferedWriter out = new BufferedWriter(new FileWriter(DATAFILE_PATH))) {
+                        out.write(jsonDatabase.toString());
+                    }
+                    Logger.log("Flushing done");
+                    needsFlush.set(false);
+
+                } catch (IOException e) {
+                    throw e;
+
+                } finally {
+                    writeLock.unlock();
+                }
+            }
+
+            return true;
+        }
+        
+        public void terminate() { running = false; }
+        
+        @Override
+        public void run() {
+            Logger.log("Starting flusher thread");
+            
+            while(running) {
+                try {
+                    flush(false);
+                    Thread.sleep(500);
+
+                } catch (IOException e) {
+                    Logger.error("Could not flush database: " + e.getMessage());
+                } catch (InterruptedException e) {
+
+               }
+            }
+            
+            try {
+                flush(true); //Force flush (partial transactions) when exitting
+
+            } catch (IOException e) {
+                Logger.error("Could not flush database: " + e.getMessage());
+            }  
+            
+            Logger.log("Exitting flusher thread");
+        }
+    }
     
     public TransactionManager() {
+        
+    }
+    
+    public void init() {
         try {
             readDatabase();
+            flusherThread.start();
             
         } catch (IOException e) {
             e.printStackTrace();
@@ -80,10 +160,16 @@ public class TransactionManager {
         }
     }
     
+    public void close() {
+        flusherThread.terminate();
+    }
+    
     public static TransactionManager get() {
-        if (instance == null)
+        if (instance == null) {
             instance = new TransactionManager();
-                    
+            instance.init();
+        }
+        
         return instance;
     }
     
@@ -135,29 +221,6 @@ public class TransactionManager {
         }
     }
     
-    private boolean flush() throws IOException {
-        if (needsFlush.get()) {
-            writeLock.lock();
-            
-            try {
-                JSONObject jsonDatabase = new JSONObject(database);
-                try (BufferedWriter out = new BufferedWriter(new FileWriter(DATAFILE_PATH))) {
-                    out.write(jsonDatabase.toString());
-                }
-                
-                needsFlush.set(false);
-                
-            } catch (IOException e) {
-                throw e;
-                
-            } finally {
-                writeLock.unlock();
-            }
-        }
-        
-        return true;
-    }
-    
     public ArrayList<MailModel> applyTransactionActions(Transaction t) throws IOException, AccountNotFoundException {
         
         //Retrieve all actions for transaction t
@@ -201,6 +264,11 @@ public class TransactionManager {
                 case TransactionAction.INSERT: 
                     writeLock.lock();
                     if (!database.get(keyAccount).containsKey(keyMailbox)) {
+                        if (!Mailboxes.labels.contains(keyMailbox)) {
+                            Logger.error("Invalid mailbox: " + keyMailbox);
+                            throw new IllegalArgumentException("Invalid mailbox: " + keyMailbox);
+                        }
+                        
                         Logger.log(action.getPath() + " not found. Inserting it");
                         database.get(keyAccount).put(keyMailbox, new ArrayList<mailclient.MailModel>());
                     }
@@ -242,16 +310,16 @@ public class TransactionManager {
             }
         }
         
-        flush();
+        transactions.add(new TransactionAction(t, TransactionAction.END, null, null, null));
         
         //Remove records for this transaction, since it has completed 
         //We are not logging transactions for after-crash restore, so we dont need it
-        transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+        /*transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
             @Override
             public Boolean apply(TransactionAction t2) {
                 return t2.getTransaction().getUniqueId() != t.getUniqueId();
             }
-        });
+        });*/
         
         return result;
     }
@@ -276,8 +344,6 @@ public class TransactionManager {
                                           })) {
             throw new RuntimeException("Transaction " + t.getUniqueId() + " has already committed.");
         }
-        
-        transactions.add(new TransactionAction(t, TransactionAction.END, null, null, null));
         
         return applyTransactionActions(t);
     }

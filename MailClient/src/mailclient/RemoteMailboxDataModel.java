@@ -12,6 +12,7 @@ import java.rmi.*;
 import java.util.ArrayList;
 import javafx.collections.FXCollections;
 import mailserver.AccountNotFoundException;
+import mailserver.Mailboxes;
 /**
  *
  * @author carloalberto

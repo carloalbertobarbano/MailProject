@@ -12,6 +12,7 @@ import java.util.Observable;
 import java.util.List;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import mailserver.Mailboxes;
 /**
  *
  * @author carloalberto

@@ -103,13 +103,13 @@ public class Database {
         
         
         try {
-            this.insertMail(account, "Sent", mail);
+            this.insertMail(account, Mailboxes.labels.get(Mailboxes.MAILBOX_SENT), mail);
             
             ArrayList<String> missingAccounts = new ArrayList<>();
             
             for (String dest : mail.getDest()) {
                 try {
-                    this.insertMail(dest, "Inbox", mail);
+                    this.insertMail(dest, Mailboxes.labels.get(Mailboxes.MAILBOX_INBOX), mail);
                 
                 } catch (AccountNotFoundException e) {
                     missingAccounts.add(dest);
@@ -127,7 +127,7 @@ public class Database {
                                                              "\n\n\n" + "----Original email body------\n" + 
                                                              mail.toString(),
                                                              new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
-                this.insertMail(account, "Inbox", deliveryStatusMail);
+                this.insertMail(account, Mailboxes.labels.get(Mailboxes.MAILBOX_INBOX), deliveryStatusMail);
             }
             
             
