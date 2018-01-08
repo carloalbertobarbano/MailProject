@@ -6,10 +6,12 @@
 package mailclient;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import static mailclient.FXMLMainActivityController.errorDialog;
 
 /**
  *
@@ -23,6 +25,16 @@ public class MailClient extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("FXMLMainActivity.fxml"));        
         
         Scene scene = new Scene(root);
+        stage.setOnCloseRequest(event -> {
+            try {
+                new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().close();
+
+            } catch (Exception e) {
+                errorDialog(e.getMessage());
+            }
+            
+            Platform.exit();
+        });
         
         stage.setScene(scene);
         stage.show();

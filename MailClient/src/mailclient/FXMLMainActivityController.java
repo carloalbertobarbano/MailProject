@@ -94,21 +94,29 @@ public class FXMLMainActivityController implements Initializable {
     private String account; 
     
     public static void errorDialog(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        StackTraceElement stackTraceElements[] = Thread.currentThread().getStackTrace();
+        String stackTrace = stackTraceElements[2].getClassName() + "." +
+                            stackTraceElements[2].getMethodName() + ": " + 
+                            stackTraceElements[2].getLineNumber();
+        
+        Alert alert = new Alert(Alert.AlertType.ERROR, message + "\n" + stackTrace, ButtonType.OK);
         alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
         alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
         alert.showAndWait();
     } 
     
+    
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         account = "carlo.alberto.barbano@outlook.com";
         
+        mailboxDataModel = new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance();
+        
         try {
-            mailboxDataModel = new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance();
+            mailboxDataModel.initConnection();
             
         } catch (Exception e) {
-            errorDialog(e.getMessage());
+            errorDialog("Cannot connect to mailserver: " + e);
         }
         
         
@@ -116,7 +124,8 @@ public class FXMLMainActivityController implements Initializable {
             mailboxDataModel.setAccount(account);
             
         } catch (Exception e) {
-            errorDialog(e.getMessage());
+            e.printStackTrace();
+            errorDialog(e.toString());
         }
         
         
@@ -250,7 +259,8 @@ public class FXMLMainActivityController implements Initializable {
                    "RE: " + currentMail.getSubject(),
                    "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
                    currentMail.getBody(),
-                   new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date())
+                   new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
+                   null
             );
             
             Parent root;
@@ -275,7 +285,8 @@ public class FXMLMainActivityController implements Initializable {
                     "FW: " + currentMail.getSubject(),
                     "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
                     currentMail.getBody(),
-                    new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date())
+                    new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
+                    null
             );
             
             Parent root;

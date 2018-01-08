@@ -10,12 +10,12 @@ package mailserver;
  * @author carloalberto
  */
 public class TransactionAction {
-    public static final int BEGIN = 1;
-    public static final int READ = 2;
-    public static final int INSERT = 3;
-    public static final int UPDATE = 4;
-    public static final int DELETE = 5;
-    public static final int END = 6;
+    public static final int BEGIN = 0;
+    public static final int READ = 1;
+    public static final int INSERT = 2;
+    public static final int UPDATE = 3;
+    public static final int DELETE = 4;
+    public static final int END = 5;
 
     private final Transaction t;
     private final int action;

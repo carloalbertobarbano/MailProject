@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package mailserver;
+package mylistsutils;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -11,10 +11,6 @@ import java.util.ArrayList;
  *
  * @author carloalberto
  */
-interface Predicate<R, T> {
-    public R apply(T t);
-}
-
 public class Lists {
     public static <T> List<T> filter(List<T> list, Predicate<Boolean, T> criteria) {
          List<T> result = new ArrayList<>();

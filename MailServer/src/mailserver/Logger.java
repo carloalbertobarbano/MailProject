@@ -16,11 +16,13 @@ public class Logger {
     
     public static void log(String message) {
         StackTraceElement stackTraceElements[] = Thread.currentThread().getStackTrace();
-        String stackTrace = stackTraceElements[2].getClassName() + "." +
-                            stackTraceElements[2].getMethodName() + ": ";
+        int index = stackTraceElements.length > 2 ? 2 : stackTraceElements.length - 1;
+        String stackTrace = stackTraceElements[index].getClassName() + "." +
+                            stackTraceElements[index].getMethodName() + ": ";
          
         if (textAreaLog != null) {
-            textAreaLog.appendText(stackTrace + message + "\n");
+            //textAreaLog.appendText(stackTrace + message + "\n");
+            //textAreaLog.setScrollTop(Double.MAX_VALUE);
         }
                
         System.out.println(message);
@@ -28,13 +30,15 @@ public class Logger {
     
     public static void error(String message) {
         StackTraceElement stackTraceElements[] = Thread.currentThread().getStackTrace();
-        String stackTrace = stackTraceElements[2].getClassName() + "." +
-                            stackTraceElements[2].getMethodName() + ": " + 
-                            stackTraceElements[2].getLineNumber();
+        int index = stackTraceElements.length > 2 ? 2 : stackTraceElements.length - 1;
+        String stackTrace = stackTraceElements[index].getClassName() + "." +
+                            stackTraceElements[index].getMethodName() + ": " + 
+                            stackTraceElements[index].getLineNumber();
         
         if (textAreaLog != null) {
-            textAreaLog.appendText("ERROR: " + message);
-            textAreaLog.appendText(" (from: " + stackTrace + ")\n");
+            //textAreaLog.appendText("ERROR: " + message);
+            //textAreaLog.appendText(" (from: " + stackTrace + ")\n");
+            //textAreaLog.setScrollTop(Double.MAX_VALUE);
         }
         
         System.err.println("ERROR: " + message);
@@ -42,13 +46,15 @@ public class Logger {
     
     public static void warning(String message) {
         StackTraceElement stackTraceElements[] = Thread.currentThread().getStackTrace();
-        String stackTrace = stackTraceElements[2].getClassName() + "." +
-                            stackTraceElements[2].getMethodName() + ": " + 
-                            stackTraceElements[2].getLineNumber();
+        int index = stackTraceElements.length > 2 ? 2 : stackTraceElements.length - 1;
+        String stackTrace = stackTraceElements[index].getClassName() + "." +
+                            stackTraceElements[index].getMethodName() + ": " + 
+                            stackTraceElements[index].getLineNumber();
         
         if (textAreaLog != null) {
-            textAreaLog.appendText("WARNING: " + message);
-            textAreaLog.appendText(" (from: " + stackTrace + ")\n");
+            //textAreaLog.appendText("WARNING: " + message);
+            //textAreaLog.appendText(" (from: " + stackTrace + ")\n");
+            //textAreaLog.setScrollTop(Double.MAX_VALUE);
         }
         
         System.out.println("WARNING: " + message);

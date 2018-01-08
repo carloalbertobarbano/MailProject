@@ -38,7 +38,7 @@ public class Database {
     }
     
     public ArrayList<mailclient.MailModel> getAccountMailbox(String account, String mailbox) throws RemoteException, AccountNotFoundException {
-        Logger.log("Retrieving mailbox: " + String.format("/%s/%s", account, mailbox));
+        //Logger.log("Retrieving mailbox: " + String.format("/%s/%s", account, mailbox));
         
         ArrayList<MailModel> result = null;
         Transaction t = transactionManager.begin();
@@ -86,6 +86,10 @@ public class Database {
             t.execute(TransactionAction.INSERT, String.format("/%s/%s", account, mailbox), null, mail);
             t.commit();
             
+        } catch (AccountNotFoundException e ) { 
+            t.abort();
+            throw new AccountNotFoundException(e.getMessage());
+            
         } catch (IOException e) {
             e.printStackTrace();
             Logger.error("Could not insert mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox) + ", aborting");
@@ -126,7 +130,7 @@ public class Database {
                                                              "Your email could not be delivered to the following containers: " + missingAccounts +
                                                              "\n\n\n" + "----Original email body------\n" + 
                                                              mail.toString(),
-                                                             new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()));
+                                                             new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()), null);
                 this.insertMail(account, Mailboxes.labels.get(Mailboxes.MAILBOX_INBOX), deliveryStatusMail);
             }
             

@@ -71,7 +71,7 @@ public class FXMLWriteActivityController implements Initializable {
 
                 if (dest.size() > 0 && !dest.get(0).isEmpty() && !subject.isEmpty() && !body.isEmpty() && !sender.isEmpty()) {
 
-                    MailModel mailModel = new MailModel(sender, dest, subject, body, date);
+                    MailModel mailModel = new MailModel(sender, dest, subject, body, date, null);
                     new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().sendMail(mailModel);
 
                     ((Stage)button_discard.getScene().getWindow()).close();

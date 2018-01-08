@@ -8,29 +8,19 @@ package mailclient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.UUID;
 
 /**
  *
  * @author carloalberto
  */
 public class MailModel implements Serializable  {
-    private static int num = 0;
-    
-    private int id;
+    private String id;
     private String sender;
     private ArrayList<String> dest;
     private String subject;
     private String body;
     private String date;
-    
-    public MailModel(String sender, ArrayList<String> dest, String subject, String body, String date) {
-        this.id = num++;
-        this.sender = sender;
-        this.dest = (ArrayList<String>)dest.clone();
-        this.subject = subject;
-        this.body = body;
-        this.date = date;
-    }
     
     @Override
     public String toString() {
@@ -38,7 +28,9 @@ public class MailModel implements Serializable  {
                "To: " + dest.toString() + "\n" +
                "Subject: " + subject + "\n" + 
                "Date: " + date + "\n" +
-               "-------------------------\n" + 
+               "-------------------------\n" +
+               "ID: " + id + "\n" + 
+               "-------------------------\n" +
                 body;
                 
     }
@@ -46,18 +38,33 @@ public class MailModel implements Serializable  {
     @Override
     public boolean equals(Object o) {
         if (o != null && o instanceof MailModel) {
-            return ((MailModel)o).getId() == this.getId();
+            return ((MailModel)o).getId().equals(this.getId());
         }
         
         return false;
     }
     
-    public int getId() { return id; }
+    public MailModel(String sender, ArrayList<String> dest, String subject, String body, String date, String id) {
+        if (id == null)
+            this.id = UUID.randomUUID().toString();
+        else 
+            this.id = id;
+        
+        this.sender = sender;
+        this.dest = (ArrayList<String>)dest.clone();
+        this.subject = subject;
+        this.body = body;
+        this.date = date;
+    }
+    
+    //public void setId(String id) { this.id = id; }
+    public String getId() { return id; }
     public String getSender() { return sender; }
     public String getSubject() { return subject; }
     public String getBody() { return body; }
     public String getDate() { return date; }
     public ArrayList<String> getDest() { return dest; }
+    
     
     public static final String SORT_DATE = "Date";
     public static Comparator<MailModel> SortDate = new Comparator<MailModel>() {

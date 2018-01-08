@@ -5,6 +5,8 @@
  */
 package mailserver;
 
+import mylistsutils.Lists;
+import mylistsutils.Predicate;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -13,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
 import java.util.Set;
@@ -69,6 +72,22 @@ public class TransactionManager {
     private AtomicBoolean needsFlush = new AtomicBoolean(false);
     private FlusherThread flusherThread = new FlusherThread();
     
+    private void dumpTransactions() {
+        String actions[] = {"BEGIN", "READ", "INSERT", "UPDATE", "DELETE", "END"};
+        
+        TransactionAction trans[] = transactions.toArray(new TransactionAction[0]);
+        
+        
+        
+        for (TransactionAction t : trans)  {
+            int id = t.getTransaction().getUniqueId();
+            int action = t.getAction();
+            String actionString = actions[action];
+            String path = t.getPath();
+            Logger.log("Transaction " + id + ": " + actionString + ", " + path);
+        }
+    }
+    
     public class FlusherThread extends Thread {
         private boolean running = true;
         
@@ -77,7 +96,6 @@ public class TransactionManager {
             if (needsFlush.get()) {
 
                 //Flush if there is no currently active transaction modifying the database
-
                 List<TransactionAction> startedTransactions = force ? null : Lists.filter(transactions, ta -> {
                     return ta.getAction() == TransactionAction.BEGIN;
                 });
@@ -86,7 +104,8 @@ public class TransactionManager {
                     return ta.getAction() == TransactionAction.END;
                 });
 
-
+                Logger.log("Active transactions: " + (startedTransactions.size() - finishedTransactions.size()));
+                dumpTransactions();
                 // unless forced, continue only if all transactions have ended
                 // We can just compare the sizes, as it is guaranteed that a transaction 
                 // can commit only once (see TransactionManager.commit())
@@ -203,8 +222,9 @@ public class TransactionManager {
                         String subject = jsonMailObject.getString("subject");
                         String body = jsonMailObject.getString("body");
                         String date = jsonMailObject.getString("date");
-                        
-                        mails.add(new MailModel(sender, dest, subject, body, date));
+                        String id = jsonMailObject.getString("id");
+                        Logger.log("Read mail from DB with ID " + id);
+                        mails.add(new MailModel(sender, dest, subject, body, date, id));
                     }
                     
                     mailboxes.put(mailboxName, mails);
@@ -314,12 +334,12 @@ public class TransactionManager {
         
         //Remove records for this transaction, since it has completed 
         //We are not logging transactions for after-crash restore, so we dont need it
-        /*transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+        transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
             @Override
             public Boolean apply(TransactionAction t2) {
                 return t2.getTransaction().getUniqueId() != t.getUniqueId();
             }
-        });*/
+        });
         
         return result;
     }
