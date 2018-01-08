@@ -27,10 +27,12 @@ public class Database {
     public static final String SYSTEM_ACCOUNT = "noreply@mailserver";
     
     public static Database get() {
-        if (instance == null)
+        return new Database();
+        
+        /*if (instance == null)
             instance = new Database();
         
-        return instance;
+        return instance;*/
     }
     
     public Database() {
@@ -48,7 +50,7 @@ public class Database {
             result = t.commit();
         
         } catch (IOException e) {
-            Logger.error("Could not retrieve " + String.format("/%s/%s", account, mailbox) + ", aborting");
+            Logger.error(account + ") Could not retrieve " + String.format("/%s/%s", account, mailbox) + ", aborting");
             t.abort();
             
             throw new RemoteException("Could not retrieve mailbox, aborting");
@@ -58,7 +60,7 @@ public class Database {
     }
     
     public boolean deleteMail(String account, String mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
-        Logger.log("Deleting mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox));
+        Logger.log(account + ") Deleting mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox));
         
         Transaction t = transactionManager.begin();
 
@@ -67,18 +69,18 @@ public class Database {
             t.commit();
         
         } catch (IOException e) {
-            Logger.error("Could not delete mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox) + ", aborting");
+            Logger.error(account + ") Could not delete mail " + mail.getId() + " from " + String.format("/%s/%s", account, mailbox) + ", aborting");
             Logger.error(e.getMessage());
             t.abort();
             
-            throw new RemoteException("Could not dellete mail, aborting");
+            throw new RemoteException("Could not delete mail, aborting");
         }
         
         return true;
     }
     
     public boolean insertMail(String account, String mailbox, MailModel mail) throws RemoteException, AccountNotFoundException {
-        Logger.log("Inserting mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox));
+        Logger.log(account + ") Inserting mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox));
         
         Transaction t = transactionManager.begin();
         
@@ -92,7 +94,7 @@ public class Database {
             
         } catch (IOException e) {
             e.printStackTrace();
-            Logger.error("Could not insert mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox) + ", aborting");
+            Logger.error(account + ") Could not insert mail " + mail.getId() + " in "  + String.format("/%s/%s", account, mailbox) + ", aborting");
             Logger.error(e.getMessage());
             t.abort();
             
@@ -103,7 +105,7 @@ public class Database {
     }
     
     public boolean sendMail(String account, MailModel mail) throws RemoteException, AccountNotFoundException {
-        Logger.log("Sending mail from " + account + " to " + mail.getDest());
+        Logger.log(account + ") Sending mail from " + account + " to " + mail.getDest());
         
         
         try {
@@ -138,7 +140,7 @@ public class Database {
             
         } catch (IOException e) {
             e.printStackTrace();
-            Logger.error("Could not send mail from " + account + " to " + mail.getDest());
+            Logger.error(account + ") Could not send mail from " + account + " to " + mail.getDest());
             Logger.error(e.getMessage());
             
             throw new RemoteException("Could not send mail!");

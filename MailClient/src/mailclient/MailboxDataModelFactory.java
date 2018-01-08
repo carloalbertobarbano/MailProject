@@ -17,7 +17,7 @@ public final class MailboxDataModelFactory {
    
    public <T extends IMailboxDataModel> T getRemoteInstance() {
        if (remoteInstance == null) {
-          remoteInstance = new RemoteMailboxDataModel(true);
+          remoteInstance = new RemoteMailboxDataModel(false);
        }
        
        return (T)remoteInstance;

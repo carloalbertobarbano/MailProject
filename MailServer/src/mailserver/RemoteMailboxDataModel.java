@@ -31,7 +31,6 @@ public class RemoteMailboxDataModel extends UnicastRemoteObject implements IRemo
     }
     
     private String account;
-    private ArrayList< ArrayList<MailModel>> mailbox;
     private final Database database = Database.get();
     
     public RemoteMailboxDataModel() throws RemoteException {

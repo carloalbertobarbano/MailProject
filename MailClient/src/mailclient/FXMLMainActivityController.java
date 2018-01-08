@@ -108,8 +108,6 @@ public class FXMLMainActivityController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        account = "carlo.alberto.barbano@outlook.com";
-        
         mailboxDataModel = new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance();
         
         try {
@@ -119,6 +117,79 @@ public class FXMLMainActivityController implements Initializable {
             errorDialog("Cannot connect to mailserver: " + e);
         }
         
+        button_write_message.setOnAction(event -> {
+            Parent root;
+            try {
+                root = FXMLLoader.load(getClass().getResource("FXMLWriteActivity.fxml"));
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+                stage.show();
+                
+            } catch (Exception e) {
+                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
+            }
+        });
+        
+        button_reply.setOnAction(event -> {
+            ArrayList<String> dest = new ArrayList<>(currentMail.getDest());
+            dest.remove(account);
+            dest.add(currentMail.getSender());
+            
+            MailModel replyMail = new MailModel(
+                   account,
+                   dest,
+                   "RE: " + currentMail.getSubject(),
+                   "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
+                   currentMail.getBody(),
+                   new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
+                   null
+            );
+            
+            Parent root;
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLWriteActivity.fxml"));
+                root = loader.load();
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+                FXMLWriteActivityController writeController = loader.<FXMLWriteActivityController>getController();
+                writeController.initFromMail(replyMail);
+                stage.show();
+                
+            } catch (Exception e) {
+                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
+            }
+        });
+        
+        button_forward.setOnAction(event -> {
+            MailModel forwardMail = new MailModel(
+                    account,
+                    new ArrayList<String>(),
+                    "FW: " + currentMail.getSubject(),
+                    "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
+                    currentMail.getBody(),
+                    new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
+                    null
+            );
+            
+            Parent root;
+            try {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLWriteActivity.fxml"));
+                root = loader.load();
+                Stage stage = new Stage();
+                stage.setScene(new Scene(root));
+                FXMLWriteActivityController writeController = loader.<FXMLWriteActivityController>getController();
+                writeController.initFromMail(forwardMail);
+                stage.show();
+                
+            } catch (Exception e) {
+                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
+            }
+        });  
+        
+    }
+    
+    public void connectAccount(String account) {
+        this.account = account; 
         
         try {
             mailboxDataModel.setAccount(account);
@@ -232,80 +303,7 @@ public class FXMLMainActivityController implements Initializable {
            } 
         });
         mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);
-        
-        
-        
-        button_write_message.setOnAction(event -> {
-            Parent root;
-            try {
-                root = FXMLLoader.load(getClass().getResource("FXMLWriteActivity.fxml"));
-                Stage stage = new Stage();
-                stage.setScene(new Scene(root));
-                stage.show();
-                
-            } catch (Exception e) {
-                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
-            }
-        });
-        
-        button_reply.setOnAction(event -> {
-            ArrayList<String> dest = new ArrayList<>(currentMail.getDest());
-            dest.remove(account);
-            dest.add(currentMail.getSender());
-            
-            MailModel replyMail = new MailModel(
-                   account,
-                   dest,
-                   "RE: " + currentMail.getSubject(),
-                   "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
-                   currentMail.getBody(),
-                   new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
-                   null
-            );
-            
-            Parent root;
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLWriteActivity.fxml"));
-                root = loader.load();
-                Stage stage = new Stage();
-                stage.setScene(new Scene(root));
-                FXMLWriteActivityController writeController = loader.<FXMLWriteActivityController>getController();
-                writeController.initFromMail(replyMail);
-                stage.show();
-                
-            } catch (Exception e) {
-                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
-            }
-        });
-        
-        button_forward.setOnAction(event -> {
-            MailModel forwardMail = new MailModel(
-                    account,
-                    new ArrayList<String>(),
-                    "FW: " + currentMail.getSubject(),
-                    "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
-                    currentMail.getBody(),
-                    new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
-                    null
-            );
-            
-            Parent root;
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLWriteActivity.fxml"));
-                root = loader.load();
-                Stage stage = new Stage();
-                stage.setScene(new Scene(root));
-                FXMLWriteActivityController writeController = loader.<FXMLWriteActivityController>getController();
-                writeController.initFromMail(forwardMail);
-                stage.show();
-                
-            } catch (Exception e) {
-                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
-            }
-        });
-        
-        
-    }    
+    }
     
 }
 

@@ -38,7 +38,7 @@ public class TransactionManager {
     private final Lock writeLock = reentrantReadWriteLock.writeLock();
     
     private static TransactionManager instance = null;
-    private static final String DATAFILE_PATH = "/home/carloalberto/mailserver.db";
+    private static final String DATAFILE_PATH = "/home/carloalberto/mailserver.json";
     
     /*
     {

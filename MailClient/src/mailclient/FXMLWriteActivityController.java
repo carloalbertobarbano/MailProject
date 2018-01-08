@@ -63,7 +63,7 @@ public class FXMLWriteActivityController implements Initializable {
         
         button_send.setOnAction((event) ->  {
             try {
-                ArrayList<String> dest = new ArrayList(Arrays.asList(textfield_to.getText().split(";")));
+                ArrayList<String> dest = new ArrayList(Arrays.asList(textfield_to.getText().replace(" ", "").split(";")));
                 String subject = textfield_subject.getText();
                 String body = textarea_body.getText();
                 String sender = new MailboxDataModelFactory().<RemoteMailboxDataModel>getRemoteInstance().getAccount();
