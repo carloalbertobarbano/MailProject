@@ -50,7 +50,7 @@
             </Menu>
         </menus>
       </MenuBar>
-      <TextField layoutX="191.0" layoutY="32.0" prefHeight="30.0" prefWidth="610.0" promptText="Search" AnchorPane.leftAnchor="190.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
+      <TextField fx:id="textfield_search" layoutX="191.0" layoutY="32.0" prefHeight="30.0" prefWidth="610.0" promptText="Search" AnchorPane.leftAnchor="190.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0" />
       <SplitPane dividerPositions="0.29797979797979796" layoutX="300.0" layoutY="267.0" prefHeight="160.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
         <items>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" style="-fx-background-color: #d1d1d1;" SplitPane.resizableWithParent="false">

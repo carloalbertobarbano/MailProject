@@ -11,9 +11,14 @@ import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
+import java.util.function.Predicate;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -33,9 +38,11 @@ import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Region;
 import mailserver.AccountNotFoundException;
 import mailserver.Mailboxes;
+import mylistsutils.Lists;
 
 /**
  *
@@ -87,6 +94,9 @@ public class FXMLMainActivityController implements Initializable {
     
     @FXML
     private Button button_write_message;
+    
+    @FXML
+    private TextField textfield_search;
     
     private RemoteMailboxDataModel mailboxDataModel;
     private MailModel currentMail;
@@ -186,6 +196,19 @@ public class FXMLMainActivityController implements Initializable {
             }
         });  
         
+        textfield_search.textProperty().addListener((observable, oldValue, query) -> {
+            System.out.println("Filtering mailbox by " + query);
+            
+            FilteredList<MailModel> filtered = mailboxDataModel.getMailbox(currentMailbox).filtered(new Predicate<MailModel>() {
+                @Override
+                public boolean test(MailModel m) {
+                    return m.getSender().toLowerCase().contains(query.toLowerCase()) || 
+                           m.getSubject().toLowerCase().contains(query.toLowerCase()) || 
+                           m.getBody().toLowerCase().contains(query.toLowerCase());
+                }
+            });
+            list_view_messages.setItems(filtered);
+        });
     }
     
     public void connectAccount(String account) {
@@ -221,25 +244,20 @@ public class FXMLMainActivityController implements Initializable {
                 currentMailbox = index;
                 mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);
                 
-             } catch (RemoteException e) {
-                 System.out.println("Mailbox " + mailbox + " empy");
+             } catch (Exception e) {
+                 System.out.println("Mailbox " + mailbox + " empty");
                  
-             } catch (AccountNotFoundException e) {
-                 errorDialog(e.getMessage());
              }
-             
         });
                
         currentMailbox = Mailboxes.MAILBOX_INBOX;
         try {
             list_view_messages.setItems(mailboxDataModel.getMailbox(Mailboxes.MAILBOX_INBOX));
         
-        } catch (RemoteException e) {
+        } catch (Exception e) {
             //Empty mailbox
             System.out.println("Empty mailbox");
             
-        } catch (AccountNotFoundException e) {
-            errorDialog(e.getMessage());
         }
         
         list_view_messages.setCellFactory(new Callback<ListView<MailModel>, ListCell<MailModel>>() {

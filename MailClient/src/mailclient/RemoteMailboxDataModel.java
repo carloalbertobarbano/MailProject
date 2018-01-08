@@ -343,14 +343,8 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
         return account;
     }
     
-    public ObservableList<mailclient.MailModel> getMailbox(int mailboxIndex) throws RemoteException, AccountNotFoundException {
+    public ObservableList<mailclient.MailModel> getMailbox(int mailboxIndex) {
         return this.mailbox.get(mailboxIndex);
-        
-        /*this.mailbox.get(mailbox).clear();
-        ArrayList<mailclient.MailModel> remoteMailbox = remoteMailboxDataModel
-                                                            .getMailbox(mailbox);
-        this.mailbox.get(mailbox).addAll(remoteMailbox);
-        return this.mailbox.get(mailbox);*/
     }
     
     public boolean deleteMail(int mailboxIndex, MailModel mail) throws RemoteException, AccountNotFoundException {
