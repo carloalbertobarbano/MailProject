@@ -8,6 +8,7 @@ package mailclient;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -67,7 +68,7 @@ public class MailModel implements Serializable  {
     
     
     public static final String SORT_DATE = "Date";
-    public static Comparator<MailModel> SortDate = new Comparator<MailModel>() {
+    public static final Comparator<MailModel> SortDate = new Comparator<MailModel>() {
         @Override
         public int compare(MailModel a, MailModel b) {
             return b.getDate().compareTo(a.getDate());
@@ -75,10 +76,17 @@ public class MailModel implements Serializable  {
     };
     
     public static final String SORT_SENDER = "Sender";
-    public static Comparator<MailModel> SortSender = new Comparator<MailModel>() {
+    public static final Comparator<MailModel> SortSender = new Comparator<MailModel>() {
         @Override
         public int compare(MailModel a, MailModel b) {
             return a.getSender().compareTo(b.getSender());
         }
     };
+    
+    public static final HashMap<String, Comparator<? super MailModel>> comparators = new HashMap<>();
+    
+    static {
+        comparators.put(SORT_DATE, SortDate);
+        comparators.put(SORT_SENDER, SortSender);
+    }
 }

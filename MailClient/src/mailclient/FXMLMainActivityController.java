@@ -10,6 +10,7 @@ import java.net.URL;
 import java.rmi.RemoteException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -84,6 +85,9 @@ public class FXMLMainActivityController implements Initializable {
     private Button button_reply;
     
     @FXML
+    private Button button_reply_all;
+    
+    @FXML
     private Button button_forward;
     
     @FXML
@@ -115,6 +119,43 @@ public class FXMLMainActivityController implements Initializable {
         alert.showAndWait();
     } 
     
+    private void replyHandler(boolean replyAll) {
+        ArrayList<String> dest = null;
+        
+        if (replyAll) {
+            dest = new ArrayList<>(currentMail.getDest());
+            dest.remove(account);
+            dest.add(currentMail.getSender());
+        } else {
+            dest = new ArrayList<>();
+            dest.add(currentMail.getSender());
+        }
+        
+        MailModel replyMail = new MailModel(
+               account,
+               dest,
+               "RE: " + currentMail.getSubject(),
+               "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
+               currentMail.getBody(),
+               new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
+               null
+        );
+
+        Parent root;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLWriteActivity.fxml"));
+            root = loader.load();
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            FXMLWriteActivityController writeController = loader.<FXMLWriteActivityController>getController();
+            writeController.initFromMail(replyMail);
+            stage.show();
+
+        } catch (Exception e) {
+            System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
+        }
+    }
+        
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -140,34 +181,13 @@ public class FXMLMainActivityController implements Initializable {
             }
         });
         
+        
         button_reply.setOnAction(event -> {
-            ArrayList<String> dest = new ArrayList<>(currentMail.getDest());
-            dest.remove(account);
-            dest.add(currentMail.getSender());
-            
-            MailModel replyMail = new MailModel(
-                   account,
-                   dest,
-                   "RE: " + currentMail.getSubject(),
-                   "\n\n----------------------------\n" + currentMail.getSender() + " wrote: \n" +
-                   currentMail.getBody(),
-                   new SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(new Date()),
-                   null
-            );
-            
-            Parent root;
-            try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource("FXMLWriteActivity.fxml"));
-                root = loader.load();
-                Stage stage = new Stage();
-                stage.setScene(new Scene(root));
-                FXMLWriteActivityController writeController = loader.<FXMLWriteActivityController>getController();
-                writeController.initFromMail(replyMail);
-                stage.show();
-                
-            } catch (Exception e) {
-                System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
-            }
+            replyHandler(false);
+        });
+        
+        button_reply_all.setOnAction(event -> {
+            replyHandler(true);
         });
         
         button_forward.setOnAction(event -> {
@@ -239,10 +259,18 @@ public class FXMLMainActivityController implements Initializable {
              }
              
              try {
-                int index = Mailboxes.labels.indexOf(mailbox);
-                list_view_messages.setItems(mailboxDataModel.getMailbox(index));
-                currentMailbox = index;
-                mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);
+                currentMailbox = Mailboxes.labels.indexOf(mailbox);
+                list_view_messages.setItems(mailboxDataModel.getMailbox(currentMailbox));
+                mailboxDataModel.sortMailbox(
+                        currentMailbox, 
+                        mailboxDataModel.getMailboxSorting(currentMailbox)
+                );
+                
+                if (mailboxDataModel.getMailboxSorting(currentMailbox).equals(MailModel.SORT_DATE)) {
+                    choicebox_sort.getSelectionModel().select(0);
+                } else {
+                    choicebox_sort.getSelectionModel().select(1);
+                }
                 
              } catch (Exception e) {
                  System.out.println("Mailbox " + mailbox + " empty");
@@ -309,18 +337,18 @@ public class FXMLMainActivityController implements Initializable {
                 
                 switch (new_value.intValue()) {
                     case 0: //Date
-                        mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);
+                        mailboxDataModel.sortMailbox(currentMailbox, MailModel.SORT_DATE);
                         break;
                         
                     case 1: //Sender Name
-                        mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortSender);
+                        mailboxDataModel.sortMailbox(currentMailbox, MailModel.SORT_SENDER);
                         break;
                         
                     default: break;
                 }
            } 
         });
-        mailboxDataModel.sortMailbox(currentMailbox, MailModel.SortDate);
+        mailboxDataModel.sortMailbox(currentMailbox, MailModel.SORT_DATE);
     }
     
 }

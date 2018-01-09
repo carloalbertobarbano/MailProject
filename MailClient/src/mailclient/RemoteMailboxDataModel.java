@@ -46,7 +46,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
     private final ReentrantReadWriteLock[] cacheReadWriteLocks = new ReentrantReadWriteLock[Mailboxes.mailboxes_num];
     private final AtomicBoolean outboxHasPending = new AtomicBoolean(false);
     
-    private HashMap<Integer, Comparator<? super MailModel>> mailboxSorting = new HashMap<>();
+    private HashMap<Integer, String> mailboxSorting = new HashMap<>();
     
     private SynchronizerThread syncThread = new SynchronizerThread();
     private boolean threadStarted = false;
@@ -134,7 +134,9 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                                 //System.out.println("Adding mail");
                                 mailbox.get(current_mailbox).clear(); //remove(0, mailbox.get(current_mailbox).size());
                                 mailbox.get(current_mailbox).addAll(remoteMailbox);
-                                mailbox.get(current_mailbox).sort(mailboxSorting.get(current_mailbox));
+                                mailbox.get(current_mailbox).sort(
+                                        MailModel.comparators.get(mailboxSorting.get(current_mailbox))
+                                );
                                 
                                 if (useCache)
                                     saveMailboxToCache(
@@ -220,7 +222,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
             if(useCache)
                 cacheReadWriteLocks[i] = new ReentrantReadWriteLock();
             
-            mailboxSorting.put(i, MailModel.SortDate);
+            mailboxSorting.put(i, MailModel.SORT_DATE);
         }
     }
     
@@ -392,9 +394,15 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
         return false;
     }
     
-    public void sortMailbox(int mailboxIndex, Comparator<? super MailModel> comparator) {
+    public String getMailboxSorting(int mailboxIndex) {
+        return this.mailboxSorting.get(mailboxIndex);
+    }
+    
+    public void sortMailbox(int mailboxIndex, String comparator) {
         this.mailboxSorting.put(mailboxIndex, comparator);
-        this.mailbox.get(mailboxIndex).sort(comparator);   
+        this.mailbox.get(mailboxIndex).sort(
+                MailModel.comparators.get(comparator)
+        );   
     }
     
     public boolean insertMail(int mailboxIndex, MailModel mail) throws RemoteException, AccountNotFoundException {
