@@ -21,8 +21,8 @@ public class Logger {
                             stackTraceElements[index].getMethodName() + ": ";
          
         if (textAreaLog != null) {
-            //textAreaLog.appendText(stackTrace + message + "\n");
-            //textAreaLog.setScrollTop(Double.MAX_VALUE);
+            textAreaLog.appendText(stackTrace + message + "\n");
+            textAreaLog.setScrollTop(Double.MAX_VALUE);
         }
                
         System.out.println(message);
@@ -36,9 +36,9 @@ public class Logger {
                             stackTraceElements[index].getLineNumber();
         
         if (textAreaLog != null) {
-            //textAreaLog.appendText("ERROR: " + message);
-            //textAreaLog.appendText(" (from: " + stackTrace + ")\n");
-            //textAreaLog.setScrollTop(Double.MAX_VALUE);
+            textAreaLog.appendText("ERROR: " + message);
+            textAreaLog.appendText(" (from: " + stackTrace + ")\n");
+            textAreaLog.setScrollTop(Double.MAX_VALUE);
         }
         
         System.err.println("ERROR: " + message);
@@ -52,9 +52,9 @@ public class Logger {
                             stackTraceElements[index].getLineNumber();
         
         if (textAreaLog != null) {
-            //textAreaLog.appendText("WARNING: " + message);
-            //textAreaLog.appendText(" (from: " + stackTrace + ")\n");
-            //textAreaLog.setScrollTop(Double.MAX_VALUE);
+            textAreaLog.appendText("WARNING: " + message);
+            textAreaLog.appendText(" (from: " + stackTrace + ")\n");
+            textAreaLog.setScrollTop(Double.MAX_VALUE);
         }
         
         System.out.println("WARNING: " + message);

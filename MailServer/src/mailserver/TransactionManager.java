@@ -335,12 +335,14 @@ public class TransactionManager {
         
         //Remove records for this transaction, since it has completed 
         //We are not logging transactions for after-crash restore, so we dont need it
-        transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
-            @Override
-            public Boolean apply(TransactionAction t2) {
-                return t2.getTransaction().getUniqueId() != t.getUniqueId();
-            }
-        });
+        synchronized (transactions) {
+            transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+                @Override
+                public Boolean apply(TransactionAction t2) {
+                    return t2.getTransaction().getUniqueId() != t.getUniqueId();
+                }
+            });
+        }
         
         return result;
     }
@@ -370,12 +372,14 @@ public class TransactionManager {
     }
     
     public void abort(Transaction t) {
-        transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
-            @Override
-            public Boolean apply(TransactionAction t2) {
-                return t2.getTransaction().getUniqueId() != t.getUniqueId();
-            }
-        });
+        synchronized (transactions) {
+            transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+                @Override
+                public Boolean apply(TransactionAction t2) {
+                    return t2.getTransaction().getUniqueId() != t.getUniqueId();
+                }
+            });
+        }
     }
     
 }

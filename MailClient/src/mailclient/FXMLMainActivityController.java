@@ -44,12 +44,13 @@ import javafx.scene.layout.Region;
 import mailserver.AccountNotFoundException;
 import mailserver.Mailboxes;
 import mylistsutils.Lists;
-
+import messaging.BroadcastReceiver;
+import messaging.Intent;
 /**
  *
  * @author carloalberto
  */
-public class FXMLMainActivityController implements Initializable {
+public class FXMLMainActivityController extends BroadcastReceiver implements Initializable {
     
     @FXML
     private TreeView tree_nav;
@@ -107,6 +108,8 @@ public class FXMLMainActivityController implements Initializable {
     private int currentMailbox;
     private String account; 
     
+    public static final int INTENT_ACTION_EMAIL_RECEIVED = 1;
+    
     public static void errorDialog(String message) {
         StackTraceElement stackTraceElements[] = Thread.currentThread().getStackTrace();
         String stackTrace = stackTraceElements[2].getClassName() + "." +
@@ -155,7 +158,6 @@ public class FXMLMainActivityController implements Initializable {
             System.out.println("Exception starting FXMLWriteActivity: " + e.getMessage());
         }
     }
-        
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -229,6 +231,8 @@ public class FXMLMainActivityController implements Initializable {
             });
             list_view_messages.setItems(filtered);
         });
+        
+        BroadcastReceiver.registerReceiver(this);
     }
     
     public void connectAccount(String account) {
@@ -349,6 +353,20 @@ public class FXMLMainActivityController implements Initializable {
            } 
         });
         mailboxDataModel.sortMailbox(currentMailbox, MailModel.SORT_DATE);
+    }
+    
+    
+    @Override
+    public void onReceive(Intent intent) {
+        if (intent.getAction() == INTENT_ACTION_EMAIL_RECEIVED) {
+            if (intent.getExtraInt("mailbox") == Mailboxes.MAILBOX_INBOX) {
+                new Alert(
+                        Alert.AlertType.INFORMATION, 
+                        "New email received\n" + intent.getExtraString("message"), 
+                        ButtonType.OK
+                ).show();
+            }
+        }
     }
     
 }

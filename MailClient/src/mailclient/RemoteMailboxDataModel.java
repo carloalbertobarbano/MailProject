@@ -27,6 +27,7 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import mailserver.AccountNotFoundException;
 import mailserver.Mailboxes;
+import messaging.Intent;
 import mylistsutils.Lists;
 import mylistsutils.Predicate;
 /**
@@ -70,8 +71,8 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     if (remoteMailbox == null)
                         continue;
                     
-                    System.out.println("Checking remote mailbox " + Mailboxes.labels.get(i));
-                    System.out.println("Remote mailbox has " + remoteMailbox.size() + " items");
+                    //System.out.println("Checking remote mailbox " + Mailboxes.labels.get(i));
+                    //System.out.println("Remote mailbox has " + remoteMailbox.size() + " items");
                     
                     final int current_mailbox = i;
                     
@@ -80,10 +81,10 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     System.out.println("There are " + mailbox.get(Mailboxes.MAILBOX_TRASH).size() + " mails in the trash");
                     
                     List<MailModel> removedMails = Lists.filter(remoteMailbox, (rm) -> {
-                        System.out.println("Remote mail ID: " + rm.getId());
+                        //System.out.println("Remote mail ID: " + rm.getId());
                         return Lists.satisfies(mailbox.get(Mailboxes.MAILBOX_TRASH), (tm) -> {
-                            System.out.println("Local mail ID: " + tm.getId());
-                            System.out.println("\tResult: " + tm.equals(rm));
+                            //System.out.println("Local mail ID: " + tm.getId());
+                            //System.out.println("\tResult: " + tm.equals(rm));
                             return tm.equals(rm);
                         });
                     });
@@ -94,29 +95,32 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                                         m.getId()
                         );
 
+                         try {
+                            remoteMailboxDataModel.deleteMail(account, current_mailbox, m);
+
+                        } catch (RemoteException | AccountNotFoundException e) {
+                             e.printStackTrace();
+                             System.err.println("Could not remove mail " + m.getId());
+                        }
+                            
+                         
                         Platform.runLater(() -> {
-                            try {
-                                remoteMailboxDataModel.deleteMail(account, current_mailbox, m);
-                                mailbox.get(Mailboxes.MAILBOX_TRASH).remove(m);
+                            mailbox.get(Mailboxes.MAILBOX_TRASH).remove(m);
                                 
-                                 if (useCache)
-                                    saveMailboxToCache(
-                                        cacheFolderPath + "/" + Mailboxes.labels.get(current_mailbox), 
-                                        current_mailbox
-                                    );
-                                 
-                            } catch (RemoteException | AccountNotFoundException e) {
-                                 e.printStackTrace();
-                                 System.err.println("Could not remove mail " + m.getId());
-                            }
+                            if (useCache)
+                               saveMailboxToCache(
+                                   cacheFolderPath + "/" + Mailboxes.labels.get(current_mailbox), 
+                                   current_mailbox
+                               );
                         }); 
                     });
                     
                     //Check for new emails
                     List<MailModel> newEmails = Lists.filter(remoteMailbox, rm -> {
-                        return Lists.satisfiesAll(mailbox.get(current_mailbox), lm -> {
-                            return !lm.equals(rm) && !removedMails.contains(rm);
-                        });
+                        return !mailbox.get(Mailboxes.MAILBOX_TRASH).contains(rm) && 
+                                Lists.satisfiesAll(mailbox.get(current_mailbox), lm -> {
+                                    return !lm.equals(rm);
+                                });
                     });
                     
                     if (newEmails.size() > 0) {
@@ -143,6 +147,25 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                                         cacheFolderPath + "/" + Mailboxes.labels.get(current_mailbox), 
                                         current_mailbox
                                     );
+                                
+                                Intent newEmailIntent = new Intent(
+                                                                FXMLMainActivityController.class,
+                                                                FXMLMainActivityController.INTENT_ACTION_EMAIL_RECEIVED
+                                                        );
+                                newEmailIntent.putExtraInt("mailbox", current_mailbox);
+                                
+                                if (newEmails.size() == 1)
+                                    newEmailIntent.putExtraString(
+                                                                "message", 
+                                                                newEmails.get(0).getSubject() + "\n" +
+                                                                newEmails.get(0).getSender()
+                                                   );
+                                else
+                                    newEmailIntent.putExtraString(
+                                                                "message",
+                                                                "You have " + newEmails.size() + " unread messages."
+                                                   );
+                                newEmailIntent.send();
                             }
                         });
                         
@@ -358,9 +381,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                             Mailboxes.MAILBOX_OUTBOX
                     );
         } else {
-            System.out.println("B");
-            
-            if(remoteMailboxDataModel != null && remoteMailboxDataModel.deleteMail(account, mailboxIndex, mail)) {
+            /*if(remoteMailboxDataModel != null && remoteMailboxDataModel.deleteMail(account, mailboxIndex, mail)) {
                 if(this.mailbox.get(mailboxIndex).remove(mail)) {
                     if (useCache) {
                         saveMailboxToCache(
@@ -370,28 +391,22 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     return true;
                     }
                 }
-            } else { //Move email to trash waiting to be synchronized
-                System.out.println("[OFFLINE MODE] Moving mail to Trash folder, id: " + mail.getId());
-                this.mailbox.get(mailboxIndex).remove(mail);
-                
-                if (mailboxIndex != Mailboxes.MAILBOX_TRASH)
-                    this.mailbox.get(Mailboxes.MAILBOX_TRASH).add(mail);
-               
-                if (useCache)
-                    if (mailboxIndex != Mailboxes.MAILBOX_TRASH)
-                        saveMailboxToCache(
-                                    cacheFolderPath + "/" + Mailboxes.labels.get(mailboxIndex), 
-                                    mailboxIndex
-                        );
-                
-                    saveMailboxToCache(
-                                cacheFolderPath + "/" + Mailboxes.labels.get(Mailboxes.MAILBOX_TRASH), 
-                                Mailboxes.MAILBOX_TRASH
-                    );
-            }
+            } else {*/ //Move email to trash waiting to be synchronized
+            System.out.println("Moving mail to Trash folder, id: " + mail.getId());
+            if (mailboxIndex != Mailboxes.MAILBOX_TRASH)
+                this.mailbox.get(Mailboxes.MAILBOX_TRASH).add(mail);
+            
+            this.mailbox.get(mailboxIndex).remove(mail);
+
+            if (useCache)
+                saveMailboxToCache(
+                            cacheFolderPath + "/" + Mailboxes.labels.get(Mailboxes.MAILBOX_TRASH), 
+                            Mailboxes.MAILBOX_TRASH
+                );
+            //}
         }
         
-        return false;
+        return true;
     }
     
     public String getMailboxSorting(int mailboxIndex) {

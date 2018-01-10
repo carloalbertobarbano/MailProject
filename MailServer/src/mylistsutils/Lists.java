@@ -15,24 +15,32 @@ public class Lists {
     public static <T> List<T> filter(List<T> list, Predicate<Boolean, T> criteria) {
          List<T> result = new ArrayList<>();
          
-         for (T t : list)
-             if (criteria.apply(t))
-                 result.add(t);
+         synchronized (list) {
+            for (T t : list)
+                if (criteria.apply(t))
+                    result.add(t);
+         }
          
          return result;
     }
     
     public static <T> Boolean satisfies(List<T> list, Predicate<Boolean, T> criteria) {
-        for (T t : list)
-            if (criteria.apply(t))
-                return true;
+        synchronized (list) {
+            for (T t : list)
+                if (criteria.apply(t))
+                    return true;
+        }
+        
         return false;
     }
     
     public static <T> Boolean satisfiesAll(List<T> list, Predicate<Boolean, T> criteria) {
-        for (T t : list)
-            if (!criteria.apply(t))
-                return false;
+        synchronized (list) {
+            for (T t : list)
+                if (!criteria.apply(t))
+                    return false;
+        }
+        
         return true;
     }
 }
