@@ -74,11 +74,9 @@ public class TransactionManager {
     private FlusherThread flusherThread = new FlusherThread();
     
     private void dumpTransactions() {
-        String actions[] = {"BEGIN", "READ", "INSERT", "UPDATE", "DELETE", "END"};
+        String actions[] = {"BEGIN", "READ", "INSERT", "UPDATE", "DELETE", "END", "ABORT"};
         
         TransactionAction trans[] = transactions.toArray(new TransactionAction[0]);
-        
-        
         
         for (TransactionAction t : trans)  {
             int id = t.getTransaction().getUniqueId();
@@ -102,7 +100,7 @@ public class TransactionManager {
                 });
 
                 List<TransactionAction> finishedTransactions = force ? null : Lists.filter(transactions, ta -> {
-                    return ta.getAction() == TransactionAction.END;
+                    return ta.getAction() == TransactionAction.END || ta.getAction() == TransactionAction.ABORT;
                 });
 
                 Logger.log("Active transactions: " + (startedTransactions.size() - finishedTransactions.size()));
@@ -335,16 +333,111 @@ public class TransactionManager {
         
         //Remove records for this transaction, since it has completed 
         //We are not logging transactions for after-crash restore, so we dont need it
-        synchronized (transactions) {
+        /*synchronized (transactions) {
             transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
                 @Override
                 public Boolean apply(TransactionAction t2) {
                     return t2.getTransaction().getUniqueId() != t.getUniqueId();
                 }
             });
-        }
+        }*/
         
         return result;
+    }
+    
+    public void revertTransactionActions(Transaction t) {
+        Logger.log("Reverting actions for transaction: " + t.getUniqueId());
+        
+        //Retrieve all actions for transaction t
+        List<TransactionAction> actions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+            @Override
+            public Boolean apply(TransactionAction ta) {
+                return ta.getTransaction().getUniqueId() == t.getUniqueId() &&
+                       ta.getAction() != TransactionAction.BEGIN && 
+                       ta.getAction() != TransactionAction.END;
+            }
+        });
+        
+        for (TransactionAction action : actions) {
+            String keyAccount = null;
+            String keyMailbox = null; 
+            try {
+                keyAccount = action.getPath().split("/")[1];
+                keyMailbox = action.getPath().split("/")[2];
+            
+            } catch (Exception e) {
+                Logger.error("Malformed path : " + action.getPath());
+                throw new IllegalArgumentException("Malformed path: " + action.getPath());
+            }
+            
+            if (!database.containsKey(keyAccount)) {
+                Logger.warning("Account " + keyAccount + " not found");
+                continue;
+            }
+                
+            
+            switch (action.getAction()) {
+                case TransactionAction.INSERT: 
+                    writeLock.lock();
+                    if (!database.get(keyAccount).containsKey(keyMailbox)) {
+                        if (!Mailboxes.labels.contains(keyMailbox)) {
+                            Logger.error("Invalid mailbox: " + keyMailbox);
+                            throw new IllegalArgumentException("Invalid mailbox: " + keyMailbox);
+                        }
+                        
+                        Logger.log(action.getPath() + " not found. Inserting it");
+                        database.get(keyAccount).put(keyMailbox, new ArrayList<mailclient.MailModel>());
+                    }
+                    
+                    database.get(keyAccount)
+                            .get(keyMailbox)
+                            .remove(action.getNewValue());
+                    
+                    needsFlush.set(true);
+                    writeLock.unlock();
+                    break;
+                
+                case TransactionAction.UPDATE: 
+                    writeLock.lock();
+                    int index = database.get(keyAccount)
+                                        .get(keyMailbox)
+                                        .indexOf(action.getNewValue());
+                    database.get(keyAccount)
+                            .get(keyMailbox)
+                            .set(index, action.getOldValue());
+                    needsFlush.set(true);
+                    writeLock.unlock();
+                    break;
+                    
+                case TransactionAction.DELETE:
+                    writeLock.lock();
+                          
+                    database.get(keyAccount)
+                            .get(keyMailbox)
+                            .add(action.getOldValue());
+                    
+                    needsFlush.set(true);
+                    writeLock.unlock();
+                    break;
+                    
+                default: 
+                    Logger.error("Unkown action: " + action.getAction() + " for TransactionAction " + action);
+                    throw new RuntimeException("Unkown action " + action.getAction() + " for TransactionAction " + action);
+            }
+        }
+        
+        transactions.add(new TransactionAction(t, TransactionAction.ABORT, null, null, null));
+        
+        //Remove records for this transaction, since it has completed 
+        //We are not logging transactions for after-crash restore, so we dont need it
+        /*synchronized (transactions) {
+            transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
+                @Override
+                public Boolean apply(TransactionAction t2) {
+                    return t2.getTransaction().getUniqueId() != t.getUniqueId();
+                }
+            });
+        }*/
     }
     
     public Transaction begin() {
@@ -372,14 +465,7 @@ public class TransactionManager {
     }
     
     public void abort(Transaction t) {
-        synchronized (transactions) {
-            transactions = Lists.filter(transactions, new Predicate<Boolean, TransactionAction>() {
-                @Override
-                public Boolean apply(TransactionAction t2) {
-                    return t2.getTransaction().getUniqueId() != t.getUniqueId();
-                }
-            });
-        }
+        revertTransactionActions(t);
     }
     
 }

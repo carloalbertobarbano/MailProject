@@ -16,6 +16,7 @@ public class TransactionAction {
     public static final int UPDATE = 3;
     public static final int DELETE = 4;
     public static final int END = 5;
+    public static final int ABORT = 6;
 
     private final Transaction t;
     private final int action;

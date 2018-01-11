@@ -88,7 +88,7 @@ public class Database {
             t.execute(TransactionAction.INSERT, String.format("/%s/%s", account, mailbox), null, mail);
             t.commit();
             
-        } catch (AccountNotFoundException e ) { 
+        } catch (AccountNotFoundException e) { 
             t.abort();
             throw new AccountNotFoundException(e.getMessage());
             
