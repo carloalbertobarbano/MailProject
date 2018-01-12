@@ -30,6 +30,7 @@ import mailserver.Mailboxes;
 import messaging.Intent;
 import mylistsutils.Lists;
 import mylistsutils.Predicate;
+
 /**
  *
  * @author carloalberto
@@ -71,20 +72,13 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     if (remoteMailbox == null)
                         continue;
                     
-                    //System.out.println("Checking remote mailbox " + Mailboxes.labels.get(i));
-                    //System.out.println("Remote mailbox has " + remoteMailbox.size() + " items");
-                    
                     final int current_mailbox = i;
-                    
-                    
+                     
                      //Local removed mails
                     System.out.println("There are " + mailbox.get(Mailboxes.MAILBOX_TRASH).size() + " mails in the trash");
                     
                     List<MailModel> removedMails = Lists.filter(remoteMailbox, (rm) -> {
-                        //System.out.println("Remote mail ID: " + rm.getId());
                         return Lists.satisfies(mailbox.get(Mailboxes.MAILBOX_TRASH), (tm) -> {
-                            //System.out.println("Local mail ID: " + tm.getId());
-                            //System.out.println("\tResult: " + tm.equals(rm));
                             return tm.equals(rm);
                         });
                     });
@@ -101,8 +95,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                         } catch (RemoteException | AccountNotFoundException e) {
                              e.printStackTrace();
                              System.err.println("Could not remove mail " + m.getId());
-                        }
-                            
+                        }   
                          
                         Platform.runLater(() -> {
                             mailbox.get(Mailboxes.MAILBOX_TRASH).remove(m);
@@ -136,7 +129,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                             @Override
                             public void run() {
                                 //System.out.println("Adding mail");
-                                mailbox.get(current_mailbox).clear(); //remove(0, mailbox.get(current_mailbox).size());
+                                mailbox.get(current_mailbox).clear();
                                 mailbox.get(current_mailbox).addAll(remoteMailbox);
                                 mailbox.get(current_mailbox).sort(
                                         MailModel.comparators.get(mailboxSorting.get(current_mailbox))
@@ -168,12 +161,10 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                                 newEmailIntent.send();
                             }
                         });
-                        
-                        
                     }
                     
                     //Check for local email to sync
-                    List<MailModel> localEmails = Lists.filter(mailbox.get(current_mailbox), new Predicate<Boolean, MailModel>() {
+                    /*List<MailModel> localEmails = Lists.filter(mailbox.get(current_mailbox), new Predicate<Boolean, MailModel>() {
                         @Override
                         public Boolean apply(MailModel t) {
                             return !remoteMailbox.contains(t);
@@ -183,7 +174,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                     if (localEmails.size() > 0 && remoteMailboxDataModel != null) {
                         for (MailModel m : localEmails) 
                             remoteMailboxDataModel.insertMail(account, current_mailbox, m);
-                    }
+                    }*/
                    
                 } catch (RemoteException|AccountNotFoundException e) {
                     e.printStackTrace();
@@ -241,7 +232,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
         this.useCache = useCache;
         
         for (int i = 0; i < Mailboxes.mailboxes_num; i++) {
-            mailbox.add(FXCollections.<MailModel>observableArrayList());
+            mailbox.add(FXCollections.<MailModel>synchronizedObservableList(FXCollections.<MailModel>observableArrayList()));
             if(useCache)
                 cacheReadWriteLocks[i] = new ReentrantReadWriteLock();
             
@@ -271,8 +262,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
     public void close() {
         syncThread.terminate();
     }
-    
-    
+     
     public ArrayList<MailModel> loadMailboxFromCache(String path, int mailboxIndex) {
         ArrayList<MailModel> result = new ArrayList<>();
         
@@ -381,17 +371,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                             Mailboxes.MAILBOX_OUTBOX
                     );
         } else {
-            /*if(remoteMailboxDataModel != null && remoteMailboxDataModel.deleteMail(account, mailboxIndex, mail)) {
-                if(this.mailbox.get(mailboxIndex).remove(mail)) {
-                    if (useCache) {
-                        saveMailboxToCache(
-                                cacheFolderPath + "/" + Mailboxes.labels.get(mailboxIndex), 
-                                mailboxIndex
-                        );
-                    return true;
-                    }
-                }
-            } else {*/ //Move email to trash waiting to be synchronized
+            //Move email to trash waiting to be synchronized
             System.out.println("Moving mail to Trash folder, id: " + mail.getId());
             if (mailboxIndex != Mailboxes.MAILBOX_TRASH)
                 this.mailbox.get(Mailboxes.MAILBOX_TRASH).add(mail);
@@ -403,7 +383,6 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                             cacheFolderPath + "/" + Mailboxes.labels.get(Mailboxes.MAILBOX_TRASH), 
                             Mailboxes.MAILBOX_TRASH
                 );
-            //}
         }
         
         return true;
@@ -419,22 +398,7 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
                 MailModel.comparators.get(comparator)
         );   
     }
-    
-    public boolean insertMail(int mailboxIndex, MailModel mail) throws RemoteException, AccountNotFoundException {
-        
-        if (useCache) {
-            this.mailbox.get(mailboxIndex).add(mail);
-            saveMailboxToCache(cacheFolderPath + "/" + Mailboxes.labels.get(mailboxIndex), 
-                               mailboxIndex
-            );
-        }
-        
-        if (remoteMailboxDataModel != null)
-            return remoteMailboxDataModel.insertMail(account, mailboxIndex, mail);
-        else
-            return false;
-    }
-    
+     
     public boolean sendMail(MailModel mail) throws RemoteException, AccountNotFoundException {
         this.mailbox.get(Mailboxes.MAILBOX_OUTBOX).add(mail);
         outboxHasPending.set(true);
@@ -447,7 +411,6 @@ public class RemoteMailboxDataModel implements IMailboxDataModel {
         }
         
         return true;
-        //return remoteMailboxDataModel.sendMail(mail);
     }
     
 }
